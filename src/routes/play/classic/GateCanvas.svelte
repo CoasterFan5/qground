@@ -2,14 +2,13 @@
 	import { renderFunctionMap, type Renderer } from '#lib/renderers/renderers.js';
 	import { onMount } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
+	import { renderGrid } from './renderGrid';
+	import { gridItemHandlers } from '#lib/gridItems/gridItems.ts';
+	import type { GridItem } from '#lib/gridItems/types.ts';
 
-	const items: { x: number; y: number; renderer: Renderer }[] = [
-		{
-			x: 0,
-			y: 0,
-			renderer: 'classicBit'
-		}
-	];
+	const GRID_SIZE = 40;
+
+	const items: GridItem[] = [];
 
 	const canvasPosition: { x: number; y: number } = { x: 0, y: 0 };
 
@@ -35,16 +34,28 @@
 		// Basically, 0,0 needs to be the center of the canvas when we are at 0, 0
 		const offsetX = canvasElement.width / 2 - canvasPosition.x;
 		const offsetY = canvasElement.height / 2 + canvasPosition.y;
+		ctx.beginPath();
+		renderGrid({
+			ctx,
+			offsetX,
+			offsetY,
+			width: canvasElement.width,
+			height: canvasElement.height,
+			gridSize: GRID_SIZE
+		});
 		for (const item of items) {
-			renderFunctionMap[item.renderer](ctx, { x: offsetX + item.x, y: offsetY + item.y });
+			ctx.beginPath();
+
+			gridItemHandlers[item.type].renderer(item, {
+				ctx,
+				width: canvasElement.width,
+				height: canvasElement.height
+			});
 		}
 	};
 
 	onMount(() => {
 		doRender();
-		setInterval(() => {
-			doRender();
-		}, 100);
 	});
 
 	let downStartPos: { x: number; y: number } = { x: 0, y: 0 };
@@ -66,6 +77,7 @@
 		downStartPos.y = e.clientY;
 		doRender();
 	};
+
 	const windowMouseUpHandler: MouseEventHandler<Window> = () => {
 		isMouseDown = false;
 	};
