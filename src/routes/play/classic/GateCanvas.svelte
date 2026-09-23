@@ -1,14 +1,17 @@
 <script lang="ts">
-	import { renderFunctionMap, type Renderer } from '#lib/renderers/renderers.js';
+	import { ClassicBit } from '#lib/gridItems/classicBit.js';
+	import { NotGate } from '#lib/gridItems/notGate.js';
+	import type { GridItem } from '#lib/gridItems/types.js';
+	import { renderGrid } from './renderGrid';
 	import { onMount } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
-	import { renderGrid } from './renderGrid';
-	import { gridItemHandlers } from '#lib/gridItems/gridItems.ts';
-	import type { GridItem } from '#lib/gridItems/types.ts';
 
 	const GRID_SIZE = 40;
 
-	const items: GridItem[] = [];
+	const items: GridItem[] = [
+		new ClassicBit({ id: 'bit-1', x: 0, y: 0 }),
+		new NotGate({ id: 'bit-1', x: 50, y: 50 })
+	];
 
 	const canvasPosition: { x: number; y: number } = { x: 0, y: 0 };
 
@@ -45,11 +48,12 @@
 		});
 		for (const item of items) {
 			ctx.beginPath();
-
-			gridItemHandlers[item.type].renderer(item, {
+			item.render({
 				ctx,
 				width: canvasElement.width,
-				height: canvasElement.height
+				height: canvasElement.height,
+				offsetX,
+				offsetY
 			});
 		}
 	};

@@ -1,32 +1,48 @@
-import type { NotGateItem } from "./notGate"
-
 export type CanvasData = {
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  offsetX: number,
+  offsetY: number,
 }
 
+export abstract class GridItem {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
 
-export type BaseGridItem = {
-  id: string,
-  x: number,
-  y: number,
-}
+  constructor({ id, x, y }: { id: string, x: number, y: number }) {
+    this.id = id
+    this.x = x
+    this.y = y
+    this.width = 40;
+    this.height = 40;
+  }
 
-export type ClassicBitItem = BaseGridItem & {
-  type: 'classicBit',
-  state: 0 | 1,
-}
+  setHeight(height: number) {
+    this.height = height
+  }
 
+  setWidth(width: number) {
+    this.width = width
+  }
 
-export type GridItem = ClassicBitItem | NotGateItem
+  getTruePosition(canvasData: CanvasData) {
+    const xOffset = this.width / 2
+    const yOffset = this.height / 2
+    const trueX = this.x - xOffset + canvasData.offsetX
+    const trueY = this.y - yOffset + canvasData.offsetY
 
-export type GridItemHandler<T extends GridItem = GridItem> = {
-  renderer: (item: T, canvasData: CanvasData) => void,
-  onClick: (item: T) => void;
-}
+    return {
+      x: trueX,
+      y: trueY,
+      ctx: canvasData.ctx
+    }
+  }
 
-export type GridItemMap = {
-  'classicBit': ClassicBitItem,
-  'notGate': NotGateItem,
+  abstract render(canvasData: CanvasData): void
+  abstract onClick(): void
+  abstract toJSON(): object
 }

@@ -1,36 +1,34 @@
-import type { BaseGridItem, GridItemHandler } from "./types";
-export type NotGateItem = BaseGridItem & {
-  type: 'notGate'
-}
+import { GridItem, type CanvasData } from './types'
 
+export class NotGate extends GridItem {
+  onClick() {
+    // No-op for NOT gates
+  }
 
-export const notGateHandler: GridItemHandler<NotGateItem> = {
-  onClick: () => { },
-  renderer: ({ x, y }, { ctx }) => {
-    const baseWidth = 40;
-    const baseHeight = 40;
-    const xOffset = baseWidth / 2;
-    const yOffset = baseHeight / 2;
-    const trueX = x - xOffset;
-    const trueY = y - yOffset;
+  render(canvasData: CanvasData) {
+    const { x, y, ctx } = this.getTruePosition(canvasData)
 
-    // we need to draw a quick triangle
-
-
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(trueX, trueY, baseWidth, baseHeight)
-    ctx.fillStyle = "#f1f1f1"
-    ctx.fillRect(trueX + 1, trueY + 1, baseWidth - 2, baseHeight - 2)
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(x, y, this.width, this.height)
+    ctx.fillStyle = '#f1f1f1'
+    ctx.fillRect(x + 1, y + 1, this.width - 2, this.height - 2)
 
     ctx.strokeStyle = 'black'
-    ctx.moveTo(trueX + 5, trueY + 5)
-    ctx.lineTo(trueX + 5, trueY + 35)
-    ctx.lineTo(trueX + 20, trueY + 20)
-    ctx.lineTo(trueX + 5, trueY + 5)
-    ctx.moveTo(trueX + 30, trueY + 20)
-    ctx.arc(trueX + 25, trueY + 20, 5, 0, Math.PI * 2)
+    ctx.moveTo(x + 5, y + 5)
+    ctx.lineTo(x + 5, y + 35)
+    ctx.lineTo(x + 20, y + 20)
+    ctx.lineTo(x + 5, y + 5)
+    ctx.moveTo(x + 30, y + 20)
+    ctx.arc(x + 25, y + 20, 5, 0, Math.PI * 2)
     ctx.stroke()
+  }
 
-    ctx.fillStyle = ""
-  },
+  toJSON() {
+    return {
+      type: 'notGate',
+      id: this.id,
+      x: this.x,
+      y: this.y
+    }
+  }
 }
