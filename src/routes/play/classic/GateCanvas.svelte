@@ -1,53 +1,28 @@
 <script lang="ts">
-	import { renderGrid } from './renderGrid';
 	import { onMount } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { GridManager } from './gridManager';
 
 	const GRID_SIZE = 40;
+	const gridManager = new GridManager(GRID_SIZE);
 
 	/**
 	 *  This takes in a real position based on 0,0 being the top left of the canvas, and turns it into a grid tile, both rendered and real
 	 */
 
 	const canvasPosition: { x: number; y: number } = { x: 0, y: 0 };
-	let mousePosition: { x: number; y: number } = { x: 0, y: 0 };
 
 	let canvasElement = $state<HTMLCanvasElement | undefined>();
-
-	const doRender = () => {
-		if (!canvasElement) {
-			console.log('no canvas');
-			return;
+	$effect(() => {
+		if (canvasElement) {
+			gridManager.setCanvas(canvasElement);
+			gridManager.resizeCanvas();
 		}
-
-		const ctx = canvasElement.getContext('2d');
-
-		if (!ctx) {
-			console.log('no cyx');
-			return;
-		}
-		console.log('doing render');
-		const width = canvasElement.clientWidth;
-		const height = canvasElement.clientHeight;
-		if (canvasElement.width !== width || canvasElement.height !== height) {
-			canvasElement.width = width;
-			canvasElement.height = height;
-		}
-		ctx.clearRect(0, 0, width, height);
-		renderGrid({
-			ctx,
-			canvasX: canvasPosition.x,
-			canvasY: canvasPosition.y,
-			width,
-			height,
-			gridSize: GRID_SIZE,
-			cursorPosition: mousePosition
-		});
-	};
+	});
 
 	onMount(() => {
-		doRender();
+		gridManager.render();
 	});
 
 	let downStartPos: { x: number; y: number } = { x: 0, y: 0 };
@@ -64,8 +39,12 @@
 			return;
 		}
 
-		mousePosition.x = e.clientX - boundingBox.x;
-		mousePosition.y = e.clientY - boundingBox.y;
+		gridManager.updateCusorPosition(() => {
+			return {
+				x: e.clientX - boundingBox.x,
+				y: e.clientY - boundingBox.y
+			};
+		});
 		if (isMouseDown) {
 			const deltaX = e.clientX - downStartPos.x;
 			const deltaY = e.clientY - downStartPos.y;
@@ -74,32 +53,33 @@
 			downStartPos.x = e.clientX;
 			downStartPos.y = e.clientY;
 		}
-		doRender();
 	};
 
 	let keyMap: Set<string> = new SvelteSet();
 
 	onMount(() => {
 		const i = setInterval(() => {
-			let moved = false;
+			let xUpdate = 0;
+			let yUpdate = 0;
 			if (keyMap.has('w') || keyMap.has('arrowup')) {
-				canvasPosition.y += 5;
-				moved = true;
+				yUpdate += 5;
 			}
 			if (keyMap.has('s') || keyMap.has('arrowdown')) {
-				canvasPosition.y -= 5;
-				moved = true;
+				yUpdate += -5;
 			}
 			if (keyMap.has('d') || keyMap.has('arrowright')) {
-				canvasPosition.x += 5;
-				moved = true;
+				xUpdate += 5;
 			}
 			if (keyMap.has('a') || keyMap.has('arrowleft')) {
-				canvasPosition.x -= 5;
-				moved = true;
+				xUpdate += -5;
 			}
-			if (moved) {
-				doRender();
+			if (xUpdate != 0 || yUpdate != 0) {
+				gridManager.updateCanvasPosition(({ x, y }) => {
+					return {
+						x: x + xUpdate,
+						y: y + yUpdate
+					};
+				});
 			}
 		}, 1000 / 30);
 		return () => {
@@ -125,12 +105,19 @@
 	onkeydown={windowKeyDownHandler}
 	onkeyup={windowKeyUpHandler}
 	onresize={() => {
-		doRender();
+		gridManager.resizeCanvas();
 	}}
 />
 <div class="wrap">
 	<div class="centerMark"></div>
-	<canvas bind:this={canvasElement} onmousedown={canvasMouseDownHandler}> </canvas>
+	<canvas
+		onclick={(e) => {
+			gridManager.onClick(e);
+		}}
+		bind:this={canvasElement}
+		onmousedown={canvasMouseDownHandler}
+	>
+	</canvas>
 </div>
 
 <style>
