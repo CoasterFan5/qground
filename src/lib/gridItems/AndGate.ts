@@ -1,12 +1,12 @@
 import type { GridManager } from '../../routes/play/classic/gridManager';
 import { GridItem, type RenderData } from './types'
 
-export class NotGate extends GridItem {
+export class AndGate extends GridItem {
 
-  isOn: boolean = false;;
+  isOn: boolean = false;
 
   onClick() {
-    // No-op for NOT gates
+    // No-op for AND gates
     return false;
   }
 
@@ -21,15 +21,22 @@ export class NotGate extends GridItem {
     ctx.fillRect(x, y, this.width, this.height)
     ctx.fillStyle = '#f1f1f1'
     ctx.fillRect(x + 1, y + 1, this.width - 2, this.height - 2)
-
-    ctx.strokeStyle = 'black'
-    ctx.moveTo(x + 5, y + 5)
-    ctx.lineTo(x + 5, y + 35)
-    ctx.lineTo(x + 20, y + 20)
-    ctx.lineTo(x + 5, y + 5)
+    ctx.strokeStyle = this.isOn ? 'orange' : 'black'
+    ctx.moveTo(x + 5, y + 0)
+    ctx.lineTo(x + 5, y + 10)
+    ctx.lineTo(x + 10, y + 10)
+    ctx.lineTo(x + 10, y + 30)
+    ctx.lineTo(x + 5, y + 30)
+    ctx.lineTo(x + 5, y + 40)
+    ctx.moveTo(x + 10, y + 10)
+    ctx.lineTo(x + 20, y + 10)
+    ctx.arc(x + 20, y + 20, 10, -Math.PI / 2, Math.PI / 2)
+    ctx.lineTo(x + 10, y + 30)
     ctx.moveTo(x + 30, y + 20)
-    ctx.arc(x + 25, y + 20, 5, 0, Math.PI * 2)
+    ctx.lineTo(x + 40, y + 20)
+
     ctx.stroke()
+
   }
 
   getSignal() {
@@ -55,19 +62,19 @@ export class NotGate extends GridItem {
   }
 
   parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
-    const input = gridManager.getItemAtPosition(gridX - 1, gridY)
-    const nextState = input ? !input.getSignal() : false
+    const upperInput = gridManager.getItemAtPosition(gridX, gridY + 1)
+    const lowerInput = gridManager.getItemAtPosition(gridX, gridY - 1)
+    const nextState = upperInput?.getSignal() === true && lowerInput?.getSignal() === true
     if (nextState === this.isOn) {
       return false
     }
-
     this.isOn = nextState
     return true
   }
 
   toJSON() {
     return {
-      type: 'notGate',
+      type: 'andGate',
       id: this.id,
       x: this.x,
       y: this.y

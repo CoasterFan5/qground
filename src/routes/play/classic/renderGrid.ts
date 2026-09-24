@@ -18,8 +18,6 @@ export const renderGridHelper = (gridManager: GridManager) => {
   const maxGridX = Math.ceil((gridManager.canvasPosition.x + gridManager.width / 2 + gridManager.gridSize / 2) / gridManager.gridSize) + 1;
   const minGridY = Math.floor((gridManager.canvasPosition.y - gridManager.height / 2 - gridManager.gridSize / 2) / gridManager.gridSize) - 1;
   const maxGridY = Math.ceil((gridManager.canvasPosition.y + gridManager.height / 2 + gridManager.gridSize / 2) / gridManager.gridSize) + 1;
-  const centeredGridX = Math.round(gridManager.canvasPosition.x / gridManager.gridSize);
-  const centeredGridY = Math.round(gridManager.canvasPosition.y / gridManager.gridSize);
 
   const cursorGridPos = gridManager.getCusorGridPosition()
 
@@ -32,7 +30,7 @@ export const renderGridHelper = (gridManager: GridManager) => {
 
       ctx.fillStyle = 'gray';
       ctx.fillRect(x, y, gridManager.gridSize, gridManager.gridSize);
-      ctx.fillStyle = gridX === centeredGridX && gridY === centeredGridY ? 'green' : 'white';
+      ctx.fillStyle = 'white'
       ctx.fillRect(
         x + borderWidth / 2,
         y + borderWidth / 2,
@@ -52,7 +50,7 @@ export const renderGridHelper = (gridManager: GridManager) => {
       }
 
       const item = gridManager.getItemAtPosition(gridX, gridY)
-      item?.render({ x, y, ctx });
+      item?.render({ x, y, gridManager });
     }
   }
 };

@@ -5,9 +5,14 @@ export class ClassicBit extends GridItem {
 
   onClick() {
     this.state = this.state === 0 ? 1 : 0
+    return true;
   }
 
-  render({ x, y, ctx }: RenderData) {
+  render({ x, y, gridManager }: RenderData) {
+    const ctx = gridManager.getRenderCtx()
+    if (!ctx) {
+      return
+    }
     ctx.beginPath()
     if (this.state == 0) {
       ctx.fillStyle = 'black'
@@ -16,6 +21,22 @@ export class ClassicBit extends GridItem {
     }
     ctx.fillRect(x, y, this.width, this.height)
     ctx.stroke()
+  }
+
+  getSignal() {
+    return this.state === 1
+  }
+
+  isSignalSource() {
+    return this.getSignal()
+  }
+
+  resetSignal() {
+    return false
+  }
+
+  parseUpdates(): boolean {
+    return false;
   }
 
   toJSON() {
