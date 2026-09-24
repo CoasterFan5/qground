@@ -28,21 +28,22 @@
 			return;
 		}
 		console.log('doing render');
-		ctx.clearRect(0, 0, canvasElement.clientWidth, canvasElement.clientHeight);
-		canvasElement.width = canvasElement.clientWidth;
-		canvasElement.height = canvasElement.clientHeight;
-		// ok so to get the true x we need to get a new offset
-		// Basically, 0,0 needs to be the center of the canvas when we are at 0, 0
-		ctx.beginPath();
+		const width = canvasElement.clientWidth;
+		const height = canvasElement.clientHeight;
+		if (canvasElement.width !== width || canvasElement.height !== height) {
+			canvasElement.width = width;
+			canvasElement.height = height;
+		}
+		ctx.clearRect(0, 0, width, height);
 		renderGrid({
 			ctx,
 			canvasX: canvasPosition.x,
 			canvasY: canvasPosition.y,
-			width: canvasElement.width,
-			height: canvasElement.height,
-			gridSize: GRID_SIZE
+			width,
+			height,
+			gridSize: GRID_SIZE,
+			cursorPosition: mousePosition
 		});
-		// Convert grid coordinates to canvas coordinates
 	};
 
 	onMount(() => {
@@ -57,8 +58,14 @@
 		isMouseDown = true;
 	};
 	const windowMouseMoveEvent: MouseEventHandler<Window> = (e) => {
-		mousePosition.x = e.clientX;
-		mousePosition.y = e.clientY;
+		const boundingBox = canvasElement?.getBoundingClientRect();
+
+		if (!boundingBox) {
+			return;
+		}
+
+		mousePosition.x = e.clientX - boundingBox.x;
+		mousePosition.y = e.clientY - boundingBox.y;
 		if (isMouseDown) {
 			const deltaX = e.clientX - downStartPos.x;
 			const deltaY = e.clientY - downStartPos.y;
@@ -102,11 +109,9 @@
 
 	const windowKeyDownHandler = (e: KeyboardEvent) => {
 		keyMap = keyMap.add(e.key.toLowerCase());
-		console.log(keyMap);
 	};
 	const windowKeyUpHandler = (e: KeyboardEvent) => {
 		keyMap.delete(e.key.toLowerCase());
-		console.log(keyMap);
 	};
 
 	const windowMouseUpHandler: MouseEventHandler<Window> = () => {
@@ -119,6 +124,9 @@
 	onmousemove={windowMouseMoveEvent}
 	onkeydown={windowKeyDownHandler}
 	onkeyup={windowKeyUpHandler}
+	onresize={() => {
+		doRender();
+	}}
 />
 <div class="wrap">
 	<div class="centerMark"></div>

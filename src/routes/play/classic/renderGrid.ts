@@ -18,66 +18,68 @@ const items: Record<GridXPosition, Record<GridYPosition, GridItem>> = {
   }
 };
 
-export const renderGrid = ({ ctx, canvasX, canvasY, width, height, gridSize }: { ctx: CanvasRenderingContext2D, canvasX: number, canvasY: number, width: number, height: number, gridSize: number }) => {
-  ctx.strokeStyle = 'gray';
-  ctx.lineWidth = 0.125;
-  ctx.beginPath();
+type RenderGridParams = {
+  ctx: CanvasRenderingContext2D;
+  canvasX: number;
+  canvasY: number;
+  width: number;
+  height: number;
+  gridSize: number;
+  cursorPosition: {
+    x: number,
+    y: number
+  }
+};
 
-  // ok so this is very simple we are going to first get the number of squares
-  const hSquare2 = Math.ceil((width / gridSize) / 2) + 1
-  const vSquare2 = Math.ceil((width / gridSize) / 2) + 1
-  const horizontalSquares = hSquare2 + 1 + hSquare2;
-  const verticalSquares = vSquare2 + 1 + vSquare2; // this is to ensure its an odd number
+export const renderGrid = ({ ctx, canvasX, canvasY, width, height, gridSize, cursorPosition }: RenderGridParams) => {
+  const centerX = width / 2 - gridSize / 2;
+  const centerY = height / 2 - gridSize / 2;
 
-  /*
-    we need to now calculate the centerOffset
-    That is, the # of pixels on the left and top that our grid needs to be pushed back such that all grid squares fit and are centered
-  */
-  const centerOffsetX = (width - (horizontalSquares * gridSize)) / 2
-  const centerOffsetY = (height - (verticalSquares * gridSize)) / 2
-
-  /*
-    There is also the fact that the canvas itself can move, if a canvas has shifted by 10px, we need to offset by 10px, but if it has shifted by 50px, we need to offset by 10px still
-  */
-  const canvasOffsetX = -(canvasX % gridSize)
-  const canvasOffsetY = canvasY % gridSize
-
-  const totalOffsetX = centerOffsetX + canvasOffsetX
-  const totalOffsetY = centerOffsetY + canvasOffsetY
-
-  // we now need to, based on the cnavas position, determine what the center square is
-  const xGridSystemOffset = Math.floor(canvasX / 40);
-  const yGridSystemOffset = Math.floor(canvasY / 40);
-
-  // we will now draw every one of those bad boys
-  for (let x = -hSquare2; x <= hSquare2 + 1; x += 1) {
-    for (let y = -vSquare2; y <= vSquare2 + 1; y += 1) {
-
-      const trueGridSystemX = x + xGridSystemOffset
-      const trueGridSystemY = -y + yGridSystemOffset
+  // Include a margin so cells entering the viewport are drawn before they become visible.
+  const minGridX = Math.floor((canvasX - width / 2 - gridSize / 2) / gridSize) - 1;
+  const maxGridX = Math.ceil((canvasX + width / 2 + gridSize / 2) / gridSize) + 1;
+  const minGridY = Math.floor((canvasY - height / 2 - gridSize / 2) / gridSize) - 1;
+  const maxGridY = Math.ceil((canvasY + height / 2 + gridSize / 2) / gridSize) + 1;
+  const centeredGridXUnrounded = canvasX / gridSize;
+  const centeredGridYUnrounded = canvasY / gridSize
+  const centeredGridX = Math.round(centeredGridXUnrounded);
+  const centeredGridY = Math.round(centeredGridYUnrounded);
 
 
-      const xPos = (x + hSquare2) * gridSize + totalOffsetX
-      const yPos = (y + vSquare2) * gridSize + totalOffsetY
-      ctx.fillStyle = 'gray'
-      ctx.fillRect(xPos, yPos, gridSize, gridSize)
-      ctx.fillStyle = 'white'
-      if (x == 0 && y == 0) {
-        ctx.fillStyle = "green"
+  // (distance from center / 40) + centeredGrid
+  const distanceFromXCenter = (cursorPosition.x - (width / 2))
+  const distanceFromYCenter = -(cursorPosition.y - (height / 2))
+  const mouseGridX = Math.round(distanceFromXCenter / gridSize + centeredGridXUnrounded)
+  const mouseGridY = Math.round(distanceFromYCenter / gridSize - centeredGridYUnrounded)
+
+  for (let gridX = minGridX; gridX <= maxGridX; gridX += 1) {
+    for (let gridY = minGridY; gridY <= maxGridY; gridY += 1) {
+      // Grid cells are centered on the canvas origin; floor to keep edges pixel-aligned.
+      const x = Math.floor(centerX + gridX * gridSize - canvasX);
+      const y = Math.floor(centerY - gridY * gridSize + canvasY);
+
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(x, y, gridSize, gridSize);
+      ctx.fillStyle = gridX === centeredGridX && gridY === centeredGridY ? 'green' : 'white';
+      ctx.fillRect(
+        x + borderWidth / 2,
+        y + borderWidth / 2,
+        gridSize - borderWidth,
+        gridSize - borderWidth
+      );
+
+      if (mouseGridX == gridX && mouseGridY == gridY) {
+        ctx.fillStyle = "#DFDFDF"
+        ctx.fillRect(
+          x + borderWidth / 2,
+          y + borderWidth / 2,
+          gridSize - borderWidth,
+          gridSize - borderWidth
+        );
       }
-      ctx.fillRect(xPos + (borderWidth / 2), yPos + (borderWidth / 2), gridSize - borderWidth, gridSize - borderWidth)
 
-      if (items && items[trueGridSystemX] && items[trueGridSystemX][trueGridSystemY]) {
-        const squareData = items[trueGridSystemX][trueGridSystemY]
-        squareData.render({
-          x: xPos,
-          y: yPos,
-          ctx: ctx,
-        })
-      }
+      const item = items[gridX]?.[gridY];
+      item?.render({ x, y, ctx });
     }
   }
-
-
-  ctx.stroke()
 };

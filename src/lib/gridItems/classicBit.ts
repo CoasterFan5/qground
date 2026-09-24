@@ -16,7 +16,6 @@ export class ClassicBit extends GridItem {
     }
     ctx.fillRect(x, y, this.width, this.height)
     ctx.stroke()
-    console.info(`Drawing classicBit @ ${x}, ${y}`)
   }
 
   toJSON() {
