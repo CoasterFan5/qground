@@ -1,4 +1,4 @@
-import { GridItem, type CanvasData } from './types'
+import { GridItem, type RenderData } from './types'
 
 export class ClassicBit extends GridItem {
   state: 0 | 1 = 0
@@ -7,10 +7,13 @@ export class ClassicBit extends GridItem {
     this.state = this.state === 0 ? 1 : 0
   }
 
-  render(canvasData: CanvasData) {
-    const { x, y, ctx } = this.getTruePosition(canvasData)
+  render({ x, y, ctx }: RenderData) {
     ctx.beginPath()
-    ctx.fillStyle = 'black'
+    if (this.state == 0) {
+      ctx.fillStyle = 'black'
+    } else {
+      ctx.fillStyle = "yellow"
+    }
     ctx.fillRect(x, y, this.width, this.height)
     ctx.stroke()
     console.info(`Drawing classicBit @ ${x}, ${y}`)

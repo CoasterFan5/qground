@@ -1,19 +1,17 @@
 <script lang="ts">
-	import { ClassicBit } from '#lib/gridItems/classicBit.js';
-	import { NotGate } from '#lib/gridItems/notGate.js';
-	import type { GridItem } from '#lib/gridItems/types.js';
 	import { renderGrid } from './renderGrid';
 	import { onMount } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	const GRID_SIZE = 40;
 
-	const items: GridItem[] = [
-		new ClassicBit({ id: 'bit-1', x: 0, y: 0 }),
-		new NotGate({ id: 'bit-1', x: 50, y: 50 })
-	];
+	/**
+	 *  This takes in a real position based on 0,0 being the top left of the canvas, and turns it into a grid tile, both rendered and real
+	 */
 
 	const canvasPosition: { x: number; y: number } = { x: 0, y: 0 };
+	let mousePosition: { x: number; y: number } = { x: 0, y: 0 };
 
 	let canvasElement = $state<HTMLCanvasElement | undefined>();
 
@@ -35,27 +33,16 @@
 		canvasElement.height = canvasElement.clientHeight;
 		// ok so to get the true x we need to get a new offset
 		// Basically, 0,0 needs to be the center of the canvas when we are at 0, 0
-		const offsetX = canvasElement.width / 2 - canvasPosition.x;
-		const offsetY = canvasElement.height / 2 + canvasPosition.y;
 		ctx.beginPath();
 		renderGrid({
 			ctx,
-			offsetX,
-			offsetY,
+			canvasX: canvasPosition.x,
+			canvasY: canvasPosition.y,
 			width: canvasElement.width,
 			height: canvasElement.height,
 			gridSize: GRID_SIZE
 		});
-		for (const item of items) {
-			ctx.beginPath();
-			item.render({
-				ctx,
-				width: canvasElement.width,
-				height: canvasElement.height,
-				offsetX,
-				offsetY
-			});
-		}
+		// Convert grid coordinates to canvas coordinates
 	};
 
 	onMount(() => {
@@ -70,16 +57,56 @@
 		isMouseDown = true;
 	};
 	const windowMouseMoveEvent: MouseEventHandler<Window> = (e) => {
-		if (!isMouseDown) {
-			return;
+		mousePosition.x = e.clientX;
+		mousePosition.y = e.clientY;
+		if (isMouseDown) {
+			const deltaX = e.clientX - downStartPos.x;
+			const deltaY = e.clientY - downStartPos.y;
+			canvasPosition.x -= deltaX;
+			canvasPosition.y += deltaY;
+			downStartPos.x = e.clientX;
+			downStartPos.y = e.clientY;
 		}
-		const deltaX = e.clientX - downStartPos.x;
-		const deltaY = e.clientY - downStartPos.y;
-		canvasPosition.x -= deltaX;
-		canvasPosition.y += deltaY;
-		downStartPos.x = e.clientX;
-		downStartPos.y = e.clientY;
 		doRender();
+	};
+
+	let keyMap: Set<string> = new SvelteSet();
+
+	onMount(() => {
+		const i = setInterval(() => {
+			let moved = false;
+			if (keyMap.has('w') || keyMap.has('arrowup')) {
+				canvasPosition.y += 5;
+				moved = true;
+			}
+			if (keyMap.has('s') || keyMap.has('arrowdown')) {
+				canvasPosition.y -= 5;
+				moved = true;
+			}
+			if (keyMap.has('d') || keyMap.has('arrowright')) {
+				canvasPosition.x += 5;
+				moved = true;
+			}
+			if (keyMap.has('a') || keyMap.has('arrowleft')) {
+				canvasPosition.x -= 5;
+				moved = true;
+			}
+			if (moved) {
+				doRender();
+			}
+		}, 1000 / 30);
+		return () => {
+			clearInterval(i);
+		};
+	});
+
+	const windowKeyDownHandler = (e: KeyboardEvent) => {
+		keyMap = keyMap.add(e.key.toLowerCase());
+		console.log(keyMap);
+	};
+	const windowKeyUpHandler = (e: KeyboardEvent) => {
+		keyMap.delete(e.key.toLowerCase());
+		console.log(keyMap);
 	};
 
 	const windowMouseUpHandler: MouseEventHandler<Window> = () => {
@@ -87,10 +114,34 @@
 	};
 </script>
 
-<svelte:window onmouseup={windowMouseUpHandler} onmousemove={windowMouseMoveEvent} />
-<canvas bind:this={canvasElement} onmousedown={canvasMouseDownHandler}> </canvas>
+<svelte:window
+	onmouseup={windowMouseUpHandler}
+	onmousemove={windowMouseMoveEvent}
+	onkeydown={windowKeyDownHandler}
+	onkeyup={windowKeyUpHandler}
+/>
+<div class="wrap">
+	<div class="centerMark"></div>
+	<canvas bind:this={canvasElement} onmousedown={canvasMouseDownHandler}> </canvas>
+</div>
 
 <style>
+	.wrap {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		display: flex;
+	}
+
+	.centerMark {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		height: 2rem;
+		width: 2rem;
+		background: yellow;
+		transform: translate(-50%, -50%);
+	}
 	canvas {
 		width: 100%;
 		height: 100%;

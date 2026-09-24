@@ -1,9 +1,7 @@
-export type CanvasData = {
+export type RenderData = {
   ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  offsetX: number,
-  offsetY: number,
+  x: number,
+  y: number,
 }
 
 export abstract class GridItem {
@@ -29,20 +27,8 @@ export abstract class GridItem {
     this.width = width
   }
 
-  getTruePosition(canvasData: CanvasData) {
-    const xOffset = this.width / 2
-    const yOffset = this.height / 2
-    const trueX = this.x - xOffset + canvasData.offsetX
-    const trueY = this.y - yOffset + canvasData.offsetY
 
-    return {
-      x: trueX,
-      y: trueY,
-      ctx: canvasData.ctx
-    }
-  }
-
-  abstract render(canvasData: CanvasData): void
+  abstract render(params: RenderData): void
   abstract onClick(): void
   abstract toJSON(): object
 }

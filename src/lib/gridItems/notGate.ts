@@ -1,13 +1,13 @@
-import { GridItem, type CanvasData } from './types'
+import { GridItem, type RenderData } from './types'
 
 export class NotGate extends GridItem {
   onClick() {
     // No-op for NOT gates
   }
 
-  render(canvasData: CanvasData) {
-    const { x, y, ctx } = this.getTruePosition(canvasData)
-
+  render({ x, y, ctx }: RenderData) {
+    ctx.beginPath()
+    ctx.lineWidth = 2;
     ctx.fillStyle = '#000000'
     ctx.fillRect(x, y, this.width, this.height)
     ctx.fillStyle = '#f1f1f1'
