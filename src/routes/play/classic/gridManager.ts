@@ -147,7 +147,8 @@ export class GridManager {
     const startPositions = this.getAdjacentUpdatePositions(changedX, changedY)
     const changedItem = this.getItemAtPosition(changedX, changedY)
 
-    if (changedItem && !changedItem.getSignal()) {
+    if (changedItem) {
+      // Rebuild this connected circuit on either source transition so wire branches cannot keep stale power alive.
       const connectedItems = this.getConnectedUpdatePositions(changedX, changedY)
       const resetItems: PositionType[] = []
 
@@ -211,6 +212,7 @@ export class GridManager {
       currentTick = nextTick
     }
   }
+
 
   private getConnectedUpdatePositions(x: number, y: number): PositionType[] {
     const connected: PositionType[] = []

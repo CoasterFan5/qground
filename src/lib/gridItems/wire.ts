@@ -25,7 +25,19 @@ export class Wire extends GridItem {
     } else {
       ctx.fillStyle = 'black'
     }
-    ctx.fillRect(x, y, this.width, this.height)
+    ctx.fillRect(x + 15, y + 15, 10, 10)
+    if (gridManager.getItemAtPosition(this.x - 1, this.y)) {
+      ctx.fillRect(x, y + 15, 15, 10)
+    }
+    if (gridManager.getItemAtPosition(this.x + 1, this.y)) {
+      ctx.fillRect(x + 25, y + 15, 15, 10)
+    }
+    if (gridManager.getItemAtPosition(this.x, this.y + 1)) {
+      ctx.fillRect(x + 15, y, 10, 15)
+    }
+    if (gridManager.getItemAtPosition(this.x, this.y - 1)) {
+      ctx.fillRect(x + 15, y + 25, 10, 15)
+    }
     ctx.stroke()
   }
 

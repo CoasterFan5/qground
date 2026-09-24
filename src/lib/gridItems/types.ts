@@ -47,7 +47,7 @@ export abstract class GridItem {
   }
   /** Identify an independent source that remains active while derived signals are reset. */
   abstract isSignalSource(): boolean
-  /** Clear derived output during a source-off rebuild; return true if output changed. */
+  /** Clear derived output during a connected-circuit rebuild; return true if output changed. */
   abstract resetSignal(): boolean
   /**
    * Recompute output from inputs. Return true only when output changes; the manager then

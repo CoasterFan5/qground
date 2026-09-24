@@ -17,7 +17,7 @@ export class ClassicBit extends GridItem {
     if (this.state == 0) {
       ctx.fillStyle = 'black'
     } else {
-      ctx.fillStyle = "yellow"
+      ctx.fillStyle = "orange"
     }
     ctx.fillRect(x, y, this.width, this.height)
     ctx.stroke()

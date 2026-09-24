@@ -2,9 +2,9 @@
 
 ## How propagation works
 
-`GridManager` starts an update from a changed item and follows occupied cardinal neighbors only: left, up, right, and down. It calls each reached item's `parseUpdates()` method. If that method returns `true` (the item's output changed), the manager schedules that item's cardinal neighbors for the next synchronous update wave. Items that do not change do not continue propagation. This is an event-driven queue, not a scan of the whole grid on every click.
+`GridManager` starts an update from a changed item and follows cells with borders, so not corner cells. It calls each reached item's `parseUpdates()` method. If that method returns `true`, the manager schedules that item's cardinal neighbors, so on and so on. This means on a click, the entire grid is not simulated, just until a gate that does not change. For instance, from a bit to an and gate that will not change.
 
-A source turning off is handled by resetting derived signals in its connected component, then rebuilding from remaining active sources. This prevents wires from staying powered by stale neighboring wire state.
+Whenever a source changes, the manager resets derived signals in its connected component, then rebuilds from all remaining active sources. This handles both on and off transitions and prevents wire branches from staying powered by stale neighboring wire state.
 
 ## Constructing and placing items
 
@@ -16,9 +16,9 @@ Create an item without supplying an ID or coordinates, for example `new AndGate(
 
 When adding a signal-producing item, implement these methods consistently:
 
-- `getSignal()` returns the item's current output signal. Gates should return their output, not an input value.
-- `parseUpdates({ gridX, gridY, gridManager })` reads the item's inputs, calculates the next output, stores it, and returns `true` only when the output changed. Missing or unpowered inputs should be treated as `false` unless the gate's logic says otherwise.
-- `canPowerNeighbor(targetX, targetY)` controls which cardinal neighbor(s) can receive this item's output. The default allows output in every cardinal direction; directional gates should override it. For example, the NOT gate and AND gate output to the right only.
+- `getSignal()` returns the item's current output signal. Gates should return their output, not an input value. This means that most of the time it will just return `item.isOn`. 
+- `parseUpdates({ gridX, gridY, gridManager })` reads the item's inputs, calculates the next output, stores it, and returns `true` only when the output changed. Missing or unpowered inputs should be treated as `false` unless the gate's logic says otherwise. This is where `inOn` should be toggled for most gates.
+- `canPowerNeighbor(targetX, targetY)` controls which cardinal neighbor(s) can receive this item's output. The default allows output in every cardinal direction; directional gates should override it. For example, the NOT gate and AND gate output to the right only. Bits output everywhere! 
 - `shouldUpdateInitially()` should return `true` for gates that need to calculate their initial output before the first click. It defaults to `false`.
 - `isSignalSource()` returns `true` only for independent active sources, such as a powered `ClassicBit`. Derived gates and wires return `false`.
 - `resetSignal()` clears derived output and returns `true` if it changed. Independent sources should remain unchanged.
