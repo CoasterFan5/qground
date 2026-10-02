@@ -1,0 +1,94 @@
+import type { GridManager } from '../../routes/play/classic/gridManager';
+import { GridItem, type RenderData } from './types'
+
+export class XOrGate extends GridItem {
+
+  isOn: boolean = false;
+
+  onClick() {
+    // No-op for AND gates
+    return false;
+  }
+
+  render({ x, y, gridManager }: RenderData) {
+    const ctx = gridManager.getRenderCtx()
+    if (!ctx) {
+      return
+    }
+    ctx.beginPath()
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(x, y, this.width, this.height)
+    ctx.fillStyle = '#f1f1f1'
+    ctx.fillRect(x + 1, y + 1, this.width - 2, this.height - 2)
+    ctx.strokeStyle = this.isOn ? 'orange' : 'black'
+
+    // the top straight lines
+    ctx.moveTo(x + 5, y + 0)
+    ctx.lineTo(x + 5, y + 10)
+    ctx.lineTo(x + 15, y + 10)
+
+    ctx.arc(x, y + 20, 15, -Math.PI / 4.5, Math.PI / 4);
+    ctx.moveTo(x + 10, y + 10)
+    ctx.arc(x - 5, y + 20, 15, -Math.PI / 4.5, Math.PI / 4)
+
+    ctx.moveTo(x + 30, y + 20)
+    ctx.arc(x + 15, y + 15, 15, Math.PI / 8, Math.PI / 2)
+    ctx.moveTo(x + 15, y + 10)
+    ctx.arc(x + 15, y + 25, 15, -Math.PI / 2, -Math.PI / 8)
+
+    ctx.moveTo(x + 15, y + 30)
+    ctx.lineTo(x + 5, y + 30)
+    ctx.lineTo(x + 5, y + 40)
+
+
+
+    ctx.stroke()
+
+  }
+
+  getSignal() {
+    return this.isOn
+  }
+
+  canPowerNeighbor(targetX: number, targetY: number) {
+    return this.isOn && targetX === this.x + 1 && targetY === this.y
+  }
+
+  shouldUpdateInitially() {
+    return true
+  }
+
+  isSignalSource() {
+    return false
+  }
+
+  resetSignal() {
+    const wasOn = this.isOn
+    this.isOn = false
+    return wasOn
+  }
+
+  parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
+    const upperInput = gridManager.getItemAtPosition(gridX, gridY + 1)
+    const lowerInput = gridManager.getItemAtPosition(gridX, gridY - 1)
+    const upperSignal = upperInput?.getSignal() === true;
+    const lowerSignal = lowerInput?.getSignal() === true;
+    console.log(upperSignal, lowerSignal)
+    const nextState = (upperSignal || lowerSignal) && !(upperSignal && lowerSignal)
+    if (nextState === this.isOn) {
+      return false
+    }
+    this.isOn = nextState
+    return true
+  }
+
+  toJSON() {
+    return {
+      type: 'andGate',
+      id: this.id,
+      x: this.x,
+      y: this.y
+    }
+  }
+}

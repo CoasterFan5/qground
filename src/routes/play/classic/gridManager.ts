@@ -1,8 +1,10 @@
 import { AndGate } from "#lib/gridItems/AndGate.js";
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
+import { OrGate } from "#lib/gridItems/orGate.js";
 import type { GridItem } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
+import { XOrGate } from "#lib/gridItems/xOrGate.js";
 import { renderGridHelper } from "./renderGrid";
 
 type PositionType = {
@@ -20,6 +22,7 @@ export class GridManager {
   canvasPosition: PositionType = { x: 0, y: 0 }
   cursorPosition: PositionType = { x: 0, y: 0 }
   cursorGridPosition: PositionType | undefined = { x: 0, y: 0 }
+  private wireNetworkSignalCache = new Map<string, boolean>()
 
   items: Record<GridXPosition, Record<GridYPosition, GridItem>> = {
     0: {
@@ -42,6 +45,20 @@ export class GridManager {
     5: {
       "-1": new Wire(),
       0: new Wire(),
+      1: new XOrGate(),
+      2: new Wire(),
+      3: new ClassicBit()
+    },
+    6: {
+      1: new Wire()
+    },
+    7: {
+      1: new Wire(),
+      2: new OrGate(),
+      3: new ClassicBit()
+    },
+    8: {
+      2: new Wire()
     }
 
   };
@@ -49,12 +66,7 @@ export class GridManager {
   constructor(gridSize: number) {
     this.gridSize = gridSize
     this.updateGridPositions()
-    const initialUpdates = Object.entries(this.items).flatMap(([gridX, column]) =>
-      Object.entries(column).flatMap(([gridY, item]) =>
-        item.shouldUpdateInitially() ? [{ x: Number(gridX), y: Number(gridY) }] : []
-      )
-    )
-    this.processUpdateQueue(initialUpdates)
+    // this.processUpdateQueue(initialUpdates)
 
   }
   updateGridPositions() {
@@ -130,6 +142,7 @@ export class GridManager {
     item.setGridPosition(x, y)
     this.items[x] ??= {}
     this.items[x][y] = item
+    this.wireNetworkSignalCache.clear()
   }
 
   onClick(e: MouseEvent) {
@@ -137,121 +150,10 @@ export class GridManager {
     const c = this.getCusorGridPosition()
     const item = this.getItemAtPosition(c.x, c.y)
     if (item?.onClick()) {
-      this.updateHandler(c.x, c.y)
+      // this.updateHandler(c.x, c.y)
     } else {
       this.render()
     }
-  }
-
-  updateHandler(changedX: number, changedY: number) {
-    const startPositions = this.getAdjacentUpdatePositions(changedX, changedY)
-    const changedItem = this.getItemAtPosition(changedX, changedY)
-
-    if (changedItem) {
-      // Rebuild this connected circuit on either source transition so wire branches cannot keep stale power alive.
-      const connectedItems = this.getConnectedUpdatePositions(changedX, changedY)
-      const resetItems: PositionType[] = []
-
-      for (const position of connectedItems) {
-        const item = this.getItemAtPosition(position.x, position.y)
-        if (item?.resetSignal()) {
-          resetItems.push(position)
-        }
-      }
-
-      for (const position of resetItems) {
-        startPositions.push(position, ...this.getAdjacentUpdatePositions(position.x, position.y))
-      }
-
-      for (const position of connectedItems) {
-        const item = this.getItemAtPosition(position.x, position.y)
-        if (item?.isSignalSource()) {
-          startPositions.push(...this.getAdjacentUpdatePositions(position.x, position.y))
-        }
-      }
-    }
-
-    this.processUpdateQueue(startPositions)
-    this.render()
-  }
-
-  private processUpdateQueue(startPositions: PositionType[]) {
-    const pending = new Set<string>()
-    const enqueue = (target: PositionType[], positions: PositionType[]) => {
-      for (const position of positions) {
-        const key = `${position.x},${position.y}`
-        if (!pending.has(key)) {
-          pending.add(key)
-          target.push(position)
-        }
-      }
-    }
-
-    let currentTick: PositionType[] = []
-    enqueue(currentTick, startPositions)
-    let processedItems = 0
-
-    while (currentTick.length > 0) {
-      const nextTick: PositionType[] = []
-
-      for (const { x, y } of currentTick) {
-        pending.delete(`${x},${y}`)
-        processedItems += 1
-        if (processedItems > 10_000) {
-          console.warn('Signal update stopped after reaching the processing limit.')
-          return
-        }
-
-        const item = this.getItemAtPosition(x, y)
-        if (!item?.parseUpdates({ gridX: x, gridY: y, gridManager: this })) {
-          continue
-        }
-
-        enqueue(nextTick, this.getAdjacentUpdatePositions(x, y))
-      }
-      currentTick = nextTick
-    }
-  }
-
-
-  private getConnectedUpdatePositions(x: number, y: number): PositionType[] {
-    const connected: PositionType[] = []
-    const visited = new Set<string>()
-    const pending = [{ x, y }]
-
-    while (pending.length > 0) {
-      const position = pending.pop()!
-      const key = `${position.x},${position.y}`
-      if (visited.has(key) || !this.getItemAtPosition(position.x, position.y)) {
-        continue
-      }
-
-      visited.add(key)
-      connected.push(position)
-      pending.push(...this.getAdjacentUpdatePositions(position.x, position.y))
-    }
-
-    return connected
-  }
-
-  private getAdjacentUpdatePositions(x: number, y: number): PositionType[] {
-    const positions: PositionType[] = []
-
-    for (let offsetX = -1; offsetX <= 1; offsetX++) {
-      for (let offsetY = -1; offsetY <= 1; offsetY++) {
-        if (Math.abs(offsetX) + Math.abs(offsetY) !== 1) {
-          continue
-        }
-
-        const gridX = x + offsetX
-        const gridY = y + offsetY
-        if (this.getItemAtPosition(gridX, gridY)) {
-          positions.push({ x: gridX, y: gridY })
-        }
-      }
-    }
-
-    return positions
   }
 
   render = () => {

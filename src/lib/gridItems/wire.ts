@@ -43,27 +43,16 @@ export class Wire extends GridItem {
 
   parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
     const wasOn = this.isOn
-    let hasPoweredNeighbor = false
-
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        if (Math.abs(x) + Math.abs(y) !== 1) {
-          continue
-        }
-
-        const item = gridManager.getItemAtPosition(gridX + x, gridY + y)
-        if (item?.canPowerNeighbor(gridX, gridY)) {
-          hasPoweredNeighbor = true
-        }
-      }
-    }
-
-    this.isOn = hasPoweredNeighbor
+    this.isOn = gridManager.getWireNetworkSignal(gridX, gridY)
     return this.isOn !== wasOn
   }
 
   getSignal() {
     return this.isOn
+  }
+
+  isSignalConduit() {
+    return true
   }
 
   isSignalSource() {

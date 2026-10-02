@@ -37,6 +37,10 @@ export abstract class GridItem {
   abstract toJSON(): object
   /** Return this item's current output signal, not whether one of its inputs is active. */
   abstract getSignal(): boolean
+  /** Wires override this to participate in a shared conductive network. */
+  isSignalConduit(): boolean {
+    return false
+  }
   /** Return true if this signal can reach the requested cardinal neighbor. */
   canPowerNeighbor(targetX: number, targetY: number): boolean {
     return this.getSignal() && (targetX !== this.x || targetY !== this.y)
