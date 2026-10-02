@@ -1,10 +1,7 @@
-import { AndGate } from "#lib/gridItems/AndGate.js";
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
-import { OrGate } from "#lib/gridItems/orGate.js";
 import type { GridItem } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
-import { XOrGate } from "#lib/gridItems/xOrGate.js";
 import { renderGridHelper } from "./renderGrid";
 
 type PositionType = {
@@ -35,31 +32,9 @@ export class GridManager {
       0: new NotGate()
     },
     3: {
-      0: new Wire(),
-      '-1': new AndGate(),
-      '-2': new ClassicBit()
-    },
-    4: {
-      '-1': new Wire()
-    },
-    5: {
-      "-1": new Wire(),
-      0: new Wire(),
-      1: new XOrGate(),
-      2: new Wire(),
-      3: new ClassicBit()
-    },
-    6: {
-      1: new Wire()
-    },
-    7: {
-      1: new Wire(),
-      2: new OrGate(),
-      3: new ClassicBit()
-    },
-    8: {
-      2: new Wire()
+      0: new Wire()
     }
+
 
   };
 
