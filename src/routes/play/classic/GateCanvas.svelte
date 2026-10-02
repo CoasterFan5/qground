@@ -118,6 +118,7 @@
 		onmousedown={canvasMouseDownHandler}
 	>
 	</canvas>
+	<div class="tools">run</div>
 </div>
 
 <style>
@@ -134,11 +135,21 @@
 		top: 50%;
 		height: 2rem;
 		width: 2rem;
-		background: yellow;
+		background: transparent;
 		transform: translate(-50%, -50%);
 	}
 	canvas {
 		width: 100%;
 		height: 100%;
+	}
+
+	.tools {
+		position: absolute;
+		right: 0.5rem;
+		top: 0.5rem;
+		border-radius: 0.25rem;
+		border: 1px solid var(--border);
+		background: var(--background);
+		box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.05);
 	}
 </style>

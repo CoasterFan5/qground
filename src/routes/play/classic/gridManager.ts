@@ -151,9 +151,8 @@ export class GridManager {
     const item = this.getItemAtPosition(c.x, c.y)
     if (item?.onClick()) {
       // this.updateHandler(c.x, c.y)
-    } else {
-      this.render()
     }
+    this.render()
   }
 
   render = () => {

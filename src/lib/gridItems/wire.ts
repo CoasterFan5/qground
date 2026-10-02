@@ -43,7 +43,6 @@ export class Wire extends GridItem {
 
   parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
     const wasOn = this.isOn
-    this.isOn = gridManager.getWireNetworkSignal(gridX, gridY)
     return this.isOn !== wasOn
   }
 

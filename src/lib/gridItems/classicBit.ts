@@ -20,6 +20,8 @@ export class ClassicBit extends GridItem {
       ctx.fillStyle = "orange"
     }
     ctx.fillRect(x, y, this.width, this.height)
+    ctx.fillStyle = 'black'
+    ctx.fillRect(x + 3, y + 3, this.width - 6, this.height - 6)
     ctx.stroke()
   }
 
