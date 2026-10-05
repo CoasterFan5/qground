@@ -1,14 +1,16 @@
 <script lang="ts">
+	import type { GridItem } from '#lib/gridItems/types.js';
 	import GateCanvas from './GateCanvas.svelte';
 	import { type Placeable, placeableDetails, placeables } from './placeables';
 
 	let placingKey = $state<Placeable | undefined>(undefined);
 
-	const placeOverride = () => {
+	type PlacingOverrideReturnFunction = (() => GridItem) | false;
+	const placeOverride: () => PlacingOverrideReturnFunction = () => {
 		if (placingKey) {
 			return placeableDetails[placingKey].builder;
 		}
-		return;
+		return false;
 	};
 </script>
 

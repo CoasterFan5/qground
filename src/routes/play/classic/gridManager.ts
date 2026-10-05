@@ -123,17 +123,20 @@ export class GridManager {
   }
 
   onClick(e: MouseEvent) {
-    e.preventDefault()
+    console.info("Grid click")
     const c = this.getCusorGridPosition()
     const item = this.getItemAtPosition(c.x, c.y)
+    console.log(item)
     if (item?.onClick()) {
       // this.updateHandler(c.x, c.y)
     }
     this.render()
+    e.preventDefault()
   }
 
   prepareSimulation() {
-    const simManager = new SimulationManager(this)
+    new SimulationManager(this)
+    this.render()
   }
 
   runSimulation() {

@@ -5,6 +5,7 @@ export class ClassicBit extends GridItem {
 
   onClick() {
     this.state = this.state === 0 ? 1 : 0
+    console.log(this.state)
     return true;
   }
 

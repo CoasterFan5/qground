@@ -10,7 +10,7 @@
 	const {
 		placeOverride
 	}: {
-		placeOverride: () => GridItemInit | undefined;
+		placeOverride: () => GridItemInit | false;
 	} = $props();
 
 	const GRID_SIZE = 40;
@@ -110,10 +110,12 @@
 	const gridClickHandler: MouseEventHandler<HTMLCanvasElement> = (e) => {
 		const placing = placeOverride();
 		if (placing) {
+			console.log('placing');
 			const gridPos = gridManager.getCusorGridPosition();
 			gridManager.setItemAtPosition(gridPos.x, gridPos.y, placing());
 			return;
 		}
+		console.info('calling grid click');
 		gridManager.onClick(e);
 	};
 </script>
