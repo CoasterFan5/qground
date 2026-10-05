@@ -42,8 +42,7 @@ export class GridManager {
   constructor(gridSize: number) {
     this.gridSize = gridSize
     this.updateGridPositions()
-    // this.processUpdateQueue(initialUpdates)
-
+    this.runSimulation()
   }
   updateGridPositions() {
     for (const [gridX, column] of Object.entries(this.items)) {
@@ -128,6 +127,7 @@ export class GridManager {
     const item = this.getItemAtPosition(c.x, c.y)
     console.log(item)
     if (item?.onClick()) {
+      this.runSimulation()
       // this.updateHandler(c.x, c.y)
     }
     this.render()

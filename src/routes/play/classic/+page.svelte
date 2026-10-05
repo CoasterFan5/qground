@@ -24,8 +24,6 @@
 				}}>{placeableDetails[p].displayName}</button
 			>
 		{/each}
-
-		<button class="topBarItem">Item2</button>
 	</div>
 	<GateCanvas {placeOverride} />
 </div>
