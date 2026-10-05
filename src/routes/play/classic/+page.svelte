@@ -1,13 +1,31 @@
-<script>
+<script lang="ts">
 	import GateCanvas from './GateCanvas.svelte';
+	import { type Placeable, placeableDetails, placeables } from './placeables';
+
+	let placingKey = $state<Placeable | undefined>(undefined);
+
+	const placeOverride = () => {
+		if (placingKey) {
+			return placeableDetails[placingKey].builder;
+		}
+		return;
+	};
 </script>
 
 <div class="wrap">
 	<div class="topBar">
-		<div class="topBarItem">Item1</div>
-		<div class="topBarItem">Item2</div>
+		{#each placeables as p, i (i)}
+			<button
+				class="topBarItem"
+				onclick={() => {
+					placingKey = p;
+				}}>{placeableDetails[p].displayName}</button
+			>
+		{/each}
+
+		<button class="topBarItem">Item2</button>
 	</div>
-	<GateCanvas />
+	<GateCanvas {placeOverride} />
 </div>
 
 <style>

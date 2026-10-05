@@ -1,15 +1,14 @@
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
-import type { GridItem } from "#lib/gridItems/types.js";
+import type { GridItem, PositionType } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
+import { SimulationManager } from "#lib/simManager.js";
+import type { GridData } from "#lib/types/grid.js";
 import { renderGridHelper } from "./renderGrid";
 
-type PositionType = {
-  x: number,
-  y: number
-}
-type GridXPosition = number;
-type GridYPosition = number;
+
+
+
 
 export class GridManager {
   gridSize: number = 0;
@@ -21,21 +20,23 @@ export class GridManager {
   cursorGridPosition: PositionType | undefined = { x: 0, y: 0 }
   private wireNetworkSignalCache = new Map<string, boolean>()
 
-  items: Record<GridXPosition, Record<GridYPosition, GridItem>> = {
+  items: GridData = {
     0: {
       0: new ClassicBit()
     },
     1: {
-      0: new Wire()
+      0: new Wire(),
+      1: new Wire(),
+      2: new Wire(),
     },
     2: {
-      0: new NotGate()
+      0: new NotGate(),
+      2: new NotGate(),
     },
     3: {
-      0: new Wire()
+      0: new Wire(),
+      2: new Wire(),
     }
-
-
   };
 
   constructor(gridSize: number) {
@@ -118,6 +119,7 @@ export class GridManager {
     this.items[x] ??= {}
     this.items[x][y] = item
     this.wireNetworkSignalCache.clear()
+    this.render()
   }
 
   onClick(e: MouseEvent) {
@@ -129,6 +131,15 @@ export class GridManager {
     }
     this.render()
   }
+
+  prepareSimulation() {
+    const simManager = new SimulationManager(this)
+  }
+
+  runSimulation() {
+    this.prepareSimulation()
+  }
+
 
   render = () => {
     renderGridHelper(this)

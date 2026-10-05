@@ -6,6 +6,11 @@ export type RenderData = {
   y: number,
 }
 
+export type PositionType = {
+  x: number,
+  y: number
+}
+
 export abstract class GridItem {
   id?: string
   x: number = 0

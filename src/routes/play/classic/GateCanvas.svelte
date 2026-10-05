@@ -3,6 +3,15 @@
 	import type { MouseEventHandler } from 'svelte/elements';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { GridManager } from './gridManager';
+	import { GridItem } from '#lib/gridItems/types.js';
+
+	type GridItemInit = () => GridItem;
+
+	const {
+		placeOverride
+	}: {
+		placeOverride: () => GridItemInit | undefined;
+	} = $props();
 
 	const GRID_SIZE = 40;
 	const gridManager = new GridManager(GRID_SIZE);
@@ -97,6 +106,16 @@
 	const windowMouseUpHandler: MouseEventHandler<Window> = () => {
 		isMouseDown = false;
 	};
+
+	const gridClickHandler: MouseEventHandler<HTMLCanvasElement> = (e) => {
+		const placing = placeOverride();
+		if (placing) {
+			const gridPos = gridManager.getCusorGridPosition();
+			gridManager.setItemAtPosition(gridPos.x, gridPos.y, placing());
+			return;
+		}
+		gridManager.onClick(e);
+	};
 </script>
 
 <svelte:window
@@ -110,15 +129,9 @@
 />
 <div class="wrap">
 	<div class="centerMark"></div>
-	<canvas
-		onclick={(e) => {
-			gridManager.onClick(e);
-		}}
-		bind:this={canvasElement}
-		onmousedown={canvasMouseDownHandler}
-	>
+	<canvas onclick={gridClickHandler} bind:this={canvasElement} onmousedown={canvasMouseDownHandler}>
 	</canvas>
-	<div class="tools">run</div>
+	<div class="tools"><button onclick={() => gridManager.runSimulation()}>run</button></div>
 </div>
 
 <style>
