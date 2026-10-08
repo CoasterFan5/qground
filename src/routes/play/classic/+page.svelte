@@ -16,6 +16,13 @@
 
 <div class="wrap">
 	<div class="topBar">
+		<button
+			onclick={() => {
+				placingKey = undefined;
+			}}
+		>
+			cancel
+		</button>
 		{#each placeables as p, i (i)}
 			<button
 				class="topBarItem"

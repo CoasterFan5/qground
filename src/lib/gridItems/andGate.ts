@@ -1,5 +1,5 @@
 import type { GridManager } from '../../routes/play/classic/gridManager';
-import { GridItem, type RenderData } from './types'
+import { GridItem, type Face, type RenderData } from './types'
 
 export class AndGate extends GridItem {
 
@@ -37,37 +37,27 @@ export class AndGate extends GridItem {
     ctx.stroke()
   }
 
-  getSignal() {
-    return this.isOn
-  }
-
-  canPowerNeighbor(targetX: number, targetY: number) {
-    return this.isOn && targetX === this.x + 1 && targetY === this.y
-  }
-
-  shouldUpdateInitially() {
-    return true
-  }
-
-  isSignalSource() {
-    return false
-  }
-
-  resetSignal() {
-    const wasOn = this.isOn
-    this.isOn = false
-    return wasOn
-  }
-
-  parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
-    const upperInput = gridManager.getItemAtPosition(gridX, gridY + 1)
-    const lowerInput = gridManager.getItemAtPosition(gridX, gridY - 1)
-    const nextState = upperInput?.getSignal() === true && lowerInput?.getSignal() === true
-    if (nextState === this.isOn) {
-      return false
+  getSignalAtFace(face: Face) {
+    if (face == "east") {
+      return this.isOn
     }
-    this.isOn = nextState
-    return true
+    return false;
+  }
+
+  updateSignal(gridManager: GridManager): boolean {
+
+    const upperTile = gridManager.getItemAtPosition(this.x, this.y + 1)
+    const lowerTile = gridManager.getItemAtPosition(this.x, this.y - 1)
+
+    const upperSignal = upperTile?.getSignalAtFace("south") ?? false
+    const lowerSignal = lowerTile?.getSignalAtFace("north") ?? false
+    const newSignal = upperSignal && lowerSignal
+
+    if (this.isOn !== newSignal) {
+      this.isOn = newSignal
+      return true
+    }
+    return false;
   }
 
   toJSON() {

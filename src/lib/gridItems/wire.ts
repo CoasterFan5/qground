@@ -9,6 +9,9 @@ export class Wire extends GridItem {
 
   isOn: boolean = false;
 
+  isWire(): boolean {
+    return true
+  }
 
   onClick() {
     return false;
@@ -41,27 +44,43 @@ export class Wire extends GridItem {
     ctx.stroke()
   }
 
-  parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
-    const wasOn = this.isOn
-    return this.isOn !== wasOn
-  }
-
-  getSignal() {
+  getSignalAtFace() {
     return this.isOn
   }
 
-  isSignalConduit() {
-    return true
-  }
+  updateSignal(gridManager: GridManager): boolean {
+    const northItem = gridManager?.getItemAtPosition(this.x, this.y + 1)
+    const eastItem = gridManager?.getItemAtPosition(this.x + 1, this.y)
+    const southItem = gridManager?.getItemAtPosition(this.x, this.y - 1)
+    const westItem = gridManager?.getItemAtPosition(this.x - 1, this.y)
 
-  isSignalSource() {
-    return false
-  }
+    let newOn = false;
+    if (northItem && !northItem.isWire() && northItem.getSignalAtFace("south")) {
+      newOn = true;
+    }
+    if (eastItem && !eastItem.isWire() && eastItem.getSignalAtFace("west")) {
+      newOn = true;
+    }
+    if (southItem && !southItem.isWire() && southItem.getSignalAtFace("north")) {
+      newOn = true;
+    }
+    if (westItem && !westItem.isWire() && westItem.getSignalAtFace("east")) {
+      newOn = true;
+    }
 
-  resetSignal() {
-    const wasOn = this.isOn
-    this.isOn = false
-    return wasOn
+    if (this.networkId) {
+      if (newOn) {
+        gridManager.networkManager.setNetworkState(this.networkId, newOn)
+      }
+      newOn = gridManager.networkManager.getNetworkState(this.networkId) || newOn
+    }
+
+    if (this.isOn === newOn) {
+      return false;
+    } else {
+      this.isOn = newOn
+      return true
+    }
   }
 
   toJSON() {

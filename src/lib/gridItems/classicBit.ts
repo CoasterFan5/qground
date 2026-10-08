@@ -5,7 +5,6 @@ export class ClassicBit extends GridItem {
 
   onClick() {
     this.state = this.state === 0 ? 1 : 0
-    console.log(this.state)
     return true;
   }
 
@@ -26,19 +25,11 @@ export class ClassicBit extends GridItem {
     ctx.stroke()
   }
 
-  getSignal() {
+  getSignalAtFace() {
     return this.state === 1
   }
 
-  isSignalSource() {
-    return this.getSignal()
-  }
-
-  resetSignal() {
-    return false
-  }
-
-  parseUpdates(): boolean {
+  updateSignal() {
     return false;
   }
 

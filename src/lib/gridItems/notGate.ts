@@ -1,9 +1,9 @@
 import type { GridManager } from '../../routes/play/classic/gridManager';
-import { GridItem, type RenderData } from './types'
+import { GridItem, type Face, type RenderData } from './types'
 
 export class NotGate extends GridItem {
 
-  isOn: boolean = false;;
+  isOn: boolean = false;
 
   onClick() {
     // No-op for NOT gates
@@ -22,7 +22,11 @@ export class NotGate extends GridItem {
     ctx.fillStyle = '#f1f1f1'
     ctx.fillRect(x + 1, y + 1, this.width - 2, this.height - 2)
 
-    ctx.strokeStyle = 'black'
+    if (this.isOn) {
+      ctx.strokeStyle = "orange"
+    } else {
+      ctx.strokeStyle = 'black'
+    }
     ctx.moveTo(x + 5, y + 5)
     ctx.lineTo(x + 5, y + 35)
     ctx.lineTo(x + 20, y + 20)
@@ -32,37 +36,23 @@ export class NotGate extends GridItem {
     ctx.stroke()
   }
 
-  getSignal() {
-    return this.isOn
-  }
-
-  canPowerNeighbor(targetX: number, targetY: number) {
-    return this.isOn && targetX === this.x + 1 && targetY === this.y
-  }
-
-  shouldUpdateInitially() {
-    return true
-  }
-
-  isSignalSource() {
-    return false
-  }
-
-  resetSignal() {
-    const wasOn = this.isOn
-    this.isOn = false
-    return wasOn
-  }
-
-  parseUpdates({ gridX, gridY, gridManager }: { gridX: number, gridY: number, gridManager: GridManager }): boolean {
-    const input = gridManager.getItemAtPosition(gridX - 1, gridY)
-    const nextState = input ? !input.getSignal() : false
-    if (nextState === this.isOn) {
-      return false
+  getSignalAtFace(face: Face) {
+    if (face == "east") {
+      return this.isOn;
+    } else {
+      return false;
     }
+  }
 
-    this.isOn = nextState
-    return true
+  updateSignal(gridManager: GridManager) {
+    const i1 = gridManager.getItemAtPosition(this.x - 1, this.y)
+    const s1 = i1?.getSignalAtFace('east') ?? false
+    if (this.isOn == !s1) {
+      return false;
+    } else {
+      this.isOn = !s1
+      return true
+    }
   }
 
   toJSON() {

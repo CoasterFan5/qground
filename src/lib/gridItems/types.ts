@@ -6,6 +6,8 @@ export type RenderData = {
   y: number,
 }
 
+export type Face = "north" | "east" | "south" | "west"
+
 export type PositionType = {
   x: number,
   y: number
@@ -17,6 +19,7 @@ export abstract class GridItem {
   y: number = 0
   width: number
   height: number
+  networkId: string | undefined = undefined
 
   constructor() {
     this.width = 40
@@ -36,31 +39,28 @@ export abstract class GridItem {
     this.width = width
   }
 
-  abstract render(params: RenderData): void
-  /** Return true when a click changes this item's state and should start propagation. */
-  abstract onClick(): boolean
-  abstract toJSON(): object
-  /** Return this item's current output signal, not whether one of its inputs is active. */
-  abstract getSignal(): boolean
-  /** Wires override this to participate in a shared conductive network. */
-  isSignalConduit(): boolean {
+  /* we can just override this for wires */
+  isWire() {
     return false
   }
-  /** Return true if this signal can reach the requested cardinal neighbor. */
-  canPowerNeighbor(targetX: number, targetY: number): boolean {
-    return this.getSignal() && (targetX !== this.x || targetY !== this.y)
-  }
-  /** Request one initial parse when the GridManager is constructed. */
-  shouldUpdateInitially(): boolean {
-    return false
-  }
-  /** Identify an independent source that remains active while derived signals are reset. */
-  abstract isSignalSource(): boolean
-  /** Clear derived output during a connected-circuit rebuild; return true if output changed. */
-  abstract resetSignal(): boolean
+
   /**
-   * Recompute output from inputs. Return true only when output changes; the manager then
-   * schedules this item's cardinal neighbors for the next synchronous update wave.
+   * This should **ONLY** be used for wires, but is available on all items for funzies
    */
-  abstract parseUpdates(args: { gridX: number, gridY: number, gridManager: GridManager }): boolean
+  setNetwork(networkId: string | undefined) {
+    this.networkId = networkId;
+  }
+
+  abstract render(params: RenderData): void
+
+  /** Return true when a click changes this item's state and should trigger a re-sim. */
+  abstract onClick(): boolean
+
+  /* Get the signal at a specific face of the gate */
+  abstract getSignalAtFace(face: Face): boolean
+
+  /* Return true if state has changed, so we can trigger a re-sim */
+  abstract updateSignal(gridManager: GridManager): boolean
+
+  abstract toJSON(): object
 }

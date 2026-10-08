@@ -1,9 +1,10 @@
+import { AndGate } from "#lib/gridItems/andGate.js";
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
 import type { GridItem, PositionType } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
-import { SimulationManager } from "#lib/simManager.js";
 import type { GridData } from "#lib/types/grid.js";
+import { NetworkManager } from "./networkManager";
 import { renderGridHelper } from "./renderGrid";
 
 
@@ -18,7 +19,7 @@ export class GridManager {
   canvasPosition: PositionType = { x: 0, y: 0 }
   cursorPosition: PositionType = { x: 0, y: 0 }
   cursorGridPosition: PositionType | undefined = { x: 0, y: 0 }
-  private wireNetworkSignalCache = new Map<string, boolean>()
+  networkManager = new NetworkManager()
 
   items: GridData = {
     0: {
@@ -35,7 +36,24 @@ export class GridManager {
     },
     3: {
       0: new Wire(),
+      1: new AndGate(),
       2: new Wire(),
+    },
+    4: {
+      1: new Wire(),
+    },
+    5: {
+      0: new Wire(),
+      1: new Wire(),
+      2: new Wire()
+    },
+    6: {
+      0: new NotGate(),
+      2: new NotGate()
+    },
+    7: {
+      0: new Wire(),
+      2: new Wire()
     }
   };
 
@@ -117,32 +135,50 @@ export class GridManager {
     item.setGridPosition(x, y)
     this.items[x] ??= {}
     this.items[x][y] = item
-    this.wireNetworkSignalCache.clear()
     this.render()
   }
 
   onClick(e: MouseEvent) {
-    console.info("Grid click")
     const c = this.getCusorGridPosition()
     const item = this.getItemAtPosition(c.x, c.y)
-    console.log(item)
     if (item?.onClick()) {
+      this.render()
       this.runSimulation()
-      // this.updateHandler(c.x, c.y)
     }
-    this.render()
     e.preventDefault()
   }
 
-  prepareSimulation() {
-    new SimulationManager(this)
+  runSimulation() {
+
+    let pendingResim = true;
+    let iterationCount = 0;
+    const maxIterations = 1000;
+    this.networkManager.runFloodFill(this)
+    while (pendingResim) {
+      this.networkManager.updateNetworkStates(this)
+      if (iterationCount >= maxIterations) {
+        console.warn("iteration count exceeded")
+        break
+      }
+      iterationCount += 1;
+      pendingResim = false;
+      console.warn(`Pending Resim Reset`)
+      for (const xData of Object.entries(this.items)) {
+        for (const yData of Object.entries(xData[1])) {
+          if (yData[1].updateSignal(this)) {
+            console.info(`Resime Triggered by:`)
+            console.info(yData[1])
+            if (pendingResim) {
+              console.info(`But one was already pending`)
+            }
+            pendingResim = true;
+          }
+
+        }
+      }
+    }
     this.render()
   }
-
-  runSimulation() {
-    this.prepareSimulation()
-  }
-
 
   render = () => {
     renderGridHelper(this)
