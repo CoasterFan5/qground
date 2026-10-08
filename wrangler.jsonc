@@ -2,5 +2,12 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "your-worker-name",
   "main": "src/index.js",
-  "compatibility_date": "2026-10-08"
+  "compatibility_date": "2026-10-08",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare"
+  },
 }
