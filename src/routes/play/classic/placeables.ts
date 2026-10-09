@@ -2,17 +2,17 @@ import { AndGate } from "#lib/gridItems/andGate.js";
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
 import { OrGate } from "#lib/gridItems/orGate.js";
-import type { GridItem } from "#lib/gridItems/types.js";
+import { GridItem, type Placeable } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
+import { WireBridge } from "#lib/gridItems/wireBridge.js";
 import { XOrGate } from "#lib/gridItems/xOrGate.js";
 
-export const placeables = ['classicBit', 'wire', 'notGate', 'andGate', 'orGate', 'xOrGate'] as const;
-export type Placeable = (typeof placeables)[number]
+
 export const placeableDetails: Record<
   Placeable,
   {
     displayName: string,
-    builder: () => GridItem
+    builder: () => GridItem | undefined
   }
 > = {
   classicBit: {
@@ -49,6 +49,18 @@ export const placeableDetails: Record<
     displayName: "XOr Gate",
     builder: () => {
       return new XOrGate()
+    }
+  },
+  'wireBridge': {
+    displayName: "Wire Bridge",
+    builder: () => {
+      return new WireBridge()
+    }
+  },
+  'delete': {
+    displayName: "delete",
+    builder: () => {
+      return undefined
     }
   }
 }

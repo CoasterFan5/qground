@@ -92,8 +92,7 @@ export class WireBridge extends GridItem {
 
   toJSON() {
     return {
-      type: 'wireBridge',
-      id: this.id,
+      type: 'wireBridge' as const,
       x: this.x,
       y: this.y
     }

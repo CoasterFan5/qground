@@ -35,11 +35,9 @@ export class ClassicBit extends GridItem {
 
   toJSON() {
     return {
-      type: 'classicBit',
-      id: this.id,
+      type: 'classicBit' as const,
       x: this.x,
       y: this.y,
-      state: this.state
     }
   }
 }

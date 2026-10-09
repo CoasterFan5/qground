@@ -6,6 +6,9 @@ export type RenderData = {
   y: number,
 }
 
+export const placeables = ['classicBit', 'wire', 'notGate', 'andGate', 'orGate', 'xOrGate', 'wireBridge', 'delete'] as const;
+export type Placeable = (typeof placeables)[number]
+
 export type Face = "north" | "east" | "south" | "west"
 
 export type PositionType = {
@@ -73,5 +76,10 @@ export abstract class GridItem {
   /* Return true if state has changed, so we can trigger a re-sim */
   abstract updateSignal(gridManager: GridManager): boolean
 
-  abstract toJSON(): object
+  abstract toJSON(): {
+    type: Placeable,
+    x: number,
+    y: number,
+    state?: object
+  }
 }

@@ -62,8 +62,7 @@ export class AndGate extends GridItem {
 
   toJSON() {
     return {
-      type: 'notGate',
-      id: this.id,
+      type: 'andGate' as const,
       x: this.x,
       y: this.y
     }

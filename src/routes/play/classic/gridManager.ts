@@ -1,11 +1,7 @@
-import { AndGate } from "#lib/gridItems/andGate.js";
-import { ClassicBit } from "#lib/gridItems/classicBit.js";
-import type { GridItem, PositionType } from "#lib/gridItems/types.js";
-import { Wire } from "#lib/gridItems/wire.js";
-import { WireBridge } from "#lib/gridItems/wireBridge.js";
-import { XOrGate } from "#lib/gridItems/xOrGate.js";
+import type { GridItem, Placeable, PositionType } from "#lib/gridItems/types.js";
 import type { GridData } from "#lib/types/grid.js";
 import { NetworkManager } from "./networkManager";
+import { placeableDetails } from "./placeables";
 import { renderGridHelper } from "./renderGrid";
 
 
@@ -22,48 +18,27 @@ export class GridManager {
   cursorGridPosition: PositionType | undefined = { x: 0, y: 0 }
   networkManager = new NetworkManager()
 
-  items: GridData = {
-    0: {
-      0: new ClassicBit(),
-      2: new ClassicBit(),
-    },
-    1: {
-      0: new Wire(),
-      2: new Wire(),
-    },
-    2: {
-      '-2': new Wire(),
-      '-1': new Wire(),
-      0: new WireBridge(),
-      1: new Wire(),
-      2: new Wire(),
-    },
-    3: {
-      '-2': new Wire(),
-      0: new Wire(),
-      2: new Wire(),
-    },
-    4: {
-      '-2': new Wire(),
-      '-1': new AndGate(),
-      0: new Wire(),
-      1: new XOrGate(),
-      2: new Wire()
-    },
-    5: {
-      1: new Wire(),
-      '-1': new Wire()
-    },
-    6: {
-      '-1': new Wire()
-    }
-  };
+  items: GridData = {};
 
   constructor(gridSize: number) {
     this.gridSize = gridSize
     this.updateGridPositions()
     this.runSimulation()
   }
+
+  loadProject(project: { type: Placeable, x: number, y: number }[]) {
+    console.info(`Loading Project`)
+    const startTime = Date.now()
+    for (const item of project) {
+      this.setItemAtPosition(item.x, item.y, placeableDetails[item.type].builder(), {
+        deferRender: true
+      })
+    }
+    const endTime = Date.now()
+    console.info(`Loaded project in ${endTime - startTime}ms`)
+    this.render()
+  }
+
   updateGridPositions() {
     for (const [gridX, column] of Object.entries(this.items)) {
       for (const [gridY, item] of Object.entries(column)) {
@@ -133,11 +108,23 @@ export class GridManager {
     return item;
   }
 
-  setItemAtPosition(x: number, y: number, item: GridItem) {
-    item.setGridPosition(x, y)
-    this.items[x] ??= {}
-    this.items[x][y] = item
-    this.render()
+  setItemAtPosition(x: number, y: number, item: GridItem | undefined, options?: {
+    deferRender: boolean
+  }) {
+    if (item) {
+      item.setGridPosition(x, y)
+      this.items[x] ??= {}
+      this.items[x][y] = item
+    } else {
+      console.log('delete')
+      if (this.items[x] && this.items[x][y]) {
+        delete this.items[x][y]
+      }
+    }
+
+    if (!options || !options.deferRender) {
+      this.render()
+    }
   }
 
   onClick(e: MouseEvent) {
@@ -154,7 +141,7 @@ export class GridManager {
 
     let pendingResim = true;
     let iterationCount = 0;
-    const maxIterations = 1000;
+    const maxIterations = 5_000;
     this.networkManager.runFloodFill(this)
     while (pendingResim) {
       this.networkManager.updateNetworkStates(this)
@@ -164,22 +151,31 @@ export class GridManager {
       }
       iterationCount += 1;
       pendingResim = false;
-      console.warn(`Pending Resim Reset`)
       for (const xData of Object.entries(this.items)) {
         for (const yData of Object.entries(xData[1])) {
           if (yData[1].updateSignal(this)) {
-            console.info(`Resime Triggered by:`)
-            console.info(yData[1])
-            if (pendingResim) {
-              console.info(`But one was already pending`)
-            }
             pendingResim = true;
           }
 
         }
       }
     }
+    console.info(`Finished resim in ${iterationCount}/${maxIterations} iterations`)
     this.render()
+  }
+
+  toJson() {
+    const items = []
+    for (const xData of Object.entries(this.items)) {
+      for (const yData of Object.entries(xData[1])) {
+        const item = yData[1]
+        items.push(item.toJSON())
+      }
+    }
+    return {
+      version: "1",
+      items: items,
+    }
   }
 
   render = () => {

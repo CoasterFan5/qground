@@ -10,4 +10,11 @@
     "binding": "ASSETS",
     "directory": ".svelte-kit/cloudflare"
   },
+  "r2_buckets": [
+    {
+      "bucket_name": "qground-projects",
+      "remote": false,
+      "binding": "projectStorage",
+    }
+  ]
 }

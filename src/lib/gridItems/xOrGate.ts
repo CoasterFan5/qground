@@ -70,8 +70,7 @@ export class XOrGate extends GridItem {
 
   toJSON() {
     return {
-      type: 'xOrGate',
-      id: this.id,
+      type: 'xOrGate' as const,
       x: this.x,
       y: this.y
     }

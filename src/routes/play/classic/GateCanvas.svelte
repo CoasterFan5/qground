@@ -3,18 +3,21 @@
 	import type { MouseEventHandler } from 'svelte/elements';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { GridManager } from './gridManager';
-	import { GridItem } from '#lib/gridItems/types.js';
+	import { GridItem, type Placeable } from '#lib/gridItems/types.js';
 
-	type GridItemInit = () => GridItem;
+	type GridItemInit = () => GridItem | undefined;
 
 	const {
-		placeOverride
+		placeOverride,
+		project
 	}: {
 		placeOverride: () => GridItemInit | false;
+		project: { type: Placeable; x: number; y: number }[];
 	} = $props();
 
 	const GRID_SIZE = 40;
 	const gridManager = new GridManager(GRID_SIZE);
+	gridManager.loadProject(project);
 
 	/**
 	 *  This takes in a real position based on 0,0 being the top left of the canvas, and turns it into a grid tile, both rendered and real
@@ -130,7 +133,14 @@
 <div class="wrap">
 	<canvas onclick={gridClickHandler} bind:this={canvasElement} onmousedown={canvasMouseDownHandler}>
 	</canvas>
-	<div class="tools"><button onclick={() => gridManager.runSimulation()}>run</button></div>
+	<div class="tools">
+		<button onclick={() => gridManager.runSimulation()}>Run</button>
+		<button
+			onclick={() => {
+				console.log(gridManager.toJson());
+			}}>Save</button
+		>
+	</div>
 </div>
 
 <style>

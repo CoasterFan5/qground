@@ -83,11 +83,9 @@ export class Wire extends GridItem {
 
   toJSON() {
     return {
-      type: 'classicBit',
-      id: this.id,
+      type: 'wire' as const,
       x: this.x,
       y: this.y,
-      isOn: this.isOn
     }
   }
 }
