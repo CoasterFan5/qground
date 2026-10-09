@@ -1,14 +1,17 @@
 <script lang="ts">
 	import favicon from '#lib/assets/favicon.svg';
 	import '@fontsource/ibm-plex-mono';
+	import { Toaster } from 'svelte-french-toast';
 
 	let { children } = $props();
 </script>
 
 <svelte:head>
+	<title>qGround</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<Toaster />
 {@render children()}
 
 <style>

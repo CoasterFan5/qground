@@ -4,6 +4,9 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { GridManager } from './gridManager';
 	import { GridItem, type Placeable } from '#lib/gridItems/types.js';
+	import { saveProject } from './save.remote';
+	import toast from 'svelte-french-toast';
+	import { goto } from '$app/navigation';
 
 	type GridItemInit = () => GridItem | undefined;
 
@@ -136,7 +139,18 @@
 		<button onclick={() => gridManager.runSimulation()}>Run</button>
 		<button
 			onclick={() => {
-				console.log(gridManager.toJson());
+				// im inlining this cause I can
+				saveProject(gridManager.toJson())
+					.then((a) => {
+						toast.success('Saved; Copy url to share!');
+						goto(`/play/classic?project=${a.message}`, {
+							invalidateAll: true
+						});
+					})
+					.catch((e) => {
+						console.error(e);
+						toast.error('Save Failed');
+					});
 			}}>Save</button
 		>
 	</div>

@@ -1,8 +1,10 @@
-import z from 'zod'
+import type { PageServerLoad } from './$types.js'
 import { defaultProject } from './defaultProject.js'
-import { placeables } from '#lib/gridItems/types.js'
+import { projectZodObject } from './zodObjects.js'
+import { env } from "cloudflare:workers"
 
-export const load = async ({ url, platform }) => {
+export const load: PageServerLoad = async ({ url }) => {
+
 
   const projectId = url.searchParams.get("project")
 
@@ -12,7 +14,9 @@ export const load = async ({ url, platform }) => {
     }
   }
 
-  const projectData = await platform?.env.projectStorage.get(projectId)
+
+
+  const projectData = await env.projectStorage.get(projectId)
 
   if (!projectData) {
     return {
@@ -20,16 +24,10 @@ export const load = async ({ url, platform }) => {
     }
   }
 
-  const parsed = z.object({
-    version: z.string(),
-    items: z.array(z.object({
-      type: z.enum(placeables),
-      x: z.number(),
-      y: z.number()
-    }))
-  }).safeParse(await projectData.text())
+  const parsed = projectZodObject.safeParse(await projectData.json())
 
   if (parsed.error) {
+    console.error(parsed.error)
     return {
       project: defaultProject.items
     }
