@@ -1,4 +1,13 @@
-export const defaultProject = {
+import type { Placeable } from "#lib/gridItems/types.js"
+
+export const defaultProject: {
+  "version": string,
+  items: {
+    type: Placeable,
+    x: number,
+    y: number
+  }[]
+} = {
   "version": "1",
   "items": [
     {

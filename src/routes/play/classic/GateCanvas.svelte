@@ -17,7 +17,6 @@
 
 	const GRID_SIZE = 40;
 	const gridManager = new GridManager(GRID_SIZE);
-	gridManager.loadProject(project);
 
 	/**
 	 *  This takes in a real position based on 0,0 being the top left of the canvas, and turns it into a grid tile, both rendered and real
@@ -34,7 +33,7 @@
 	});
 
 	onMount(() => {
-		gridManager.render();
+		gridManager.loadProject(project);
 	});
 
 	let downStartPos: { x: number; y: number } = { x: 0, y: 0 };
