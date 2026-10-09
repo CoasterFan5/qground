@@ -1,9 +1,8 @@
 import { AndGate } from "#lib/gridItems/andGate.js";
 import { ClassicBit } from "#lib/gridItems/classicBit.js";
-import { NotGate } from "#lib/gridItems/notGate.js";
 import type { GridItem, PositionType } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
-import { WireBridge } from "#lib/gridItems/wireBridge.ts";
+import { WireBridge } from "#lib/gridItems/wireBridge.js";
 import { XOrGate } from "#lib/gridItems/xOrGate.js";
 import type { GridData } from "#lib/types/grid.js";
 import { NetworkManager } from "./networkManager";

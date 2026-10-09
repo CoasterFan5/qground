@@ -1,19 +1,35 @@
 import type { GridItem } from "#lib/gridItems/types.js";
 import { getSurroundingFaceList } from "#lib/utils/getSurroundingFaceList.js";
+import type { Face } from "#lib/gridItems/types.js";
 import type { GridManager } from "./gridManager";
+
+const faces: Face[] = ["north", "east", "south", "west"]
+
+function oppositeFace(face: Face): Face {
+  switch (face) {
+    case "north": return "south"
+    case "east": return "west"
+    case "south": return "north"
+    case "west": return "east"
+  }
+}
+
+function getChannelKey(gridItem: GridItem, face: Face) {
+  return gridItem.getConnectedTiles(face)
+    .map(({ x, y, face: neighborFace }) => `${x}-${y}:${neighborFace}`)
+    .sort()
+    .join("|")
+}
 
 export class NetworkManager {
   networks: Record<string, boolean> = {}
   private iter = 0
 
-  constructor() {
-    this.networks = {}
-  }
-
   createNetwork() {
-    this.iter += 1;
-    this.networks[this.iter.toString(16)] = false;
-    return this.iter.toString(16)
+    this.iter += 1
+    const id = this.iter.toString(16)
+    this.networks[id] = false
+    return id
   }
 
   setNetworkState(id: string, powered: boolean) {
@@ -25,71 +41,112 @@ export class NetworkManager {
   }
 
   runFloodFill(gridManager: GridManager) {
-    const avoids = new Set<string>()
-    for (const xData of Object.entries(gridManager.items)) {
-      for (const yData of Object.entries(xData[1])) {
-        NetworkManager.parseWireTile({
-          gridItem: yData[1],
-          gridManager,
-          networkId: this.createNetwork(),
-          avoids,
-        })
+    this.networks = {}
+    this.iter = 0
+
+    for (const column of Object.values(gridManager.items)) {
+      for (const gridItem of Object.values(column)) {
+        for (const face of faces) {
+          gridItem.setNetwork(undefined, face)
+        }
+      }
+    }
+
+    const visited = new Set<string>()
+    for (const column of Object.values(gridManager.items)) {
+      for (const gridItem of Object.values(column)) {
+        for (const face of faces) {
+          if (gridItem.getConnectedTiles(face).length === 0) {
+            continue
+          }
+
+          const key = `${gridItem.x}-${gridItem.y}:${getChannelKey(gridItem, face)}`
+          if (visited.has(key)) {
+            continue
+          }
+
+          this.parseWireTile({
+            gridItem,
+            face,
+            gridManager,
+            networkId: this.createNetwork(),
+            visited,
+          })
+        }
       }
     }
   }
 
   updateNetworkStates(gridManager: GridManager) {
-    // set all networks to unpowered before we recompute
-    for (const [networkId] of Object.entries(this.networks)) {
-      this.networks[networkId] = false;
+    for (const networkId of Object.keys(this.networks)) {
+      this.networks[networkId] = false
     }
 
-    for (const [xPosString, xData] of Object.entries(gridManager.items)) {
-      for (const [yPosString, gridItem] of Object.entries(xData)) {
-        if (gridItem.isWire() && gridItem.networkId) {
-          // check surrounding power sources
-          //
-          const sfList = getSurroundingFaceList(parseInt(xPosString), parseInt(yPosString))
-          for (const item of sfList) {
-            const gi2 = gridManager.getItemAtPosition(item.x, item.y)
-            if (gi2) {
-              if (!gi2.isWire() && gi2.getSignalAtFace(item.face)) {
-                this.networks[gridItem.networkId] = true;
-              }
-            }
+    for (const column of Object.values(gridManager.items)) {
+      for (const gridItem of Object.values(column)) {
+        const surroundingTiles = getSurroundingFaceList(gridItem.x, gridItem.y)
+        for (const tile of surroundingTiles) {
+          const networkFace = oppositeFace(tile.face)
+          const networkId = gridItem.networkIds[networkFace]
+          if (!networkId) {
+            continue
+          }
+
+          const adjacentItem = gridManager.getItemAtPosition(tile.x, tile.y)
+          if (!adjacentItem || adjacentItem.networkIds[tile.face]) {
+            continue
+          }
+
+          if (adjacentItem.getSignalAtFace(tile.face)) {
+            this.networks[networkId] = true
           }
         }
       }
     }
-
   }
 
-  private static parseWireTile({ gridItem, gridManager, networkId, avoids }: { gridItem: GridItem | undefined, gridManager: GridManager, networkId: string, avoids: Set<string> }) {
+  private parseWireTile({
+    gridItem,
+    face,
+    gridManager,
+    networkId,
+    visited,
+  }: {
+    gridItem: GridItem | undefined,
+    face: Face,
+    gridManager: GridManager,
+    networkId: string,
+    visited: Set<string>,
+  }) {
     if (!gridItem) {
       return
     }
 
-    const key = `${gridItem.x}-${gridItem.y}`
-    if (avoids.has(key)) {
+    const connectedTiles = gridItem.getConnectedTiles(face)
+    if (connectedTiles.length === 0) {
       return
     }
-    avoids.add(key)
-    if (gridItem.isWire()) {
-      gridItem.setNetwork(networkId)
-      // get the gridItem around
-      const tile1 = gridManager.getItemAtPosition(gridItem.x, gridItem.y + 1)
-      const tile2 = gridManager.getItemAtPosition(gridItem.x + 1, gridItem.y)
-      const tile3 = gridManager.getItemAtPosition(gridItem.x, gridItem.y - 1)
-      const tile4 = gridManager.getItemAtPosition(gridItem.x - 1, gridItem.y)
-      if (
-        tile1?.getSignalAtFace("south") && !tile1.isWire()
-      ) {
-        gridManager.networkManager.setNetworkState(networkId, true)
+
+    const key = `${gridItem.x}-${gridItem.y}:${getChannelKey(gridItem, face)}`
+    if (visited.has(key)) {
+      return
+    }
+    visited.add(key)
+    gridItem.setNetwork(networkId, face)
+
+    for (const tile of connectedTiles) {
+      const adjacentItem = gridManager.getItemAtPosition(tile.x, tile.y)
+      if (!adjacentItem) {
+        continue
       }
-      this.parseWireTile({ gridItem: tile1, gridManager, networkId, avoids })
-      this.parseWireTile({ gridItem: tile2, gridManager, networkId, avoids })
-      this.parseWireTile({ gridItem: tile3, gridManager, networkId, avoids })
-      this.parseWireTile({ gridItem: tile4, gridManager, networkId, avoids })
+
+      this.parseWireTile({
+        gridItem: adjacentItem,
+        face: tile.face,
+        gridManager,
+        networkId,
+        visited,
+      })
     }
   }
 }

@@ -1,6 +1,6 @@
 import type { GridManager } from '../../routes/play/classic/gridManager';
 
-import { GridItem, type RenderData } from './types'
+import { GridItem, type ConnectedTile, type Face, type RenderData } from './types'
 
 /**
  * Wires can connect to any bits, and will, if there is a positive charge around it, become positive. It can also connect to gates.
@@ -11,6 +11,25 @@ export class Wire extends GridItem {
 
   isWire(): boolean {
     return true
+  }
+
+  setNetwork(networkId: string | undefined, face: Face) {
+    this.networkIds[face] = networkId
+    for (const connectedFace of ["north", "east", "south", "west"] as const) {
+      if (connectedFace !== face) {
+        this.networkIds[connectedFace] = networkId
+      }
+    }
+  }
+
+  getConnectedTiles(face: Face): ConnectedTile[] {
+    void face
+    return [
+      { x: this.x, y: this.y + 1, face: "south" },
+      { x: this.x + 1, y: this.y, face: "west" },
+      { x: this.x, y: this.y - 1, face: "north" },
+      { x: this.x - 1, y: this.y, face: "east" },
+    ]
   }
 
   onClick() {
@@ -49,31 +68,10 @@ export class Wire extends GridItem {
   }
 
   updateSignal(gridManager: GridManager): boolean {
-    const northItem = gridManager?.getItemAtPosition(this.x, this.y + 1)
-    const eastItem = gridManager?.getItemAtPosition(this.x + 1, this.y)
-    const southItem = gridManager?.getItemAtPosition(this.x, this.y - 1)
-    const westItem = gridManager?.getItemAtPosition(this.x - 1, this.y)
-
-    let newOn = false;
-    if (northItem && !northItem.isWire() && northItem.getSignalAtFace("south")) {
-      newOn = true;
-    }
-    if (eastItem && !eastItem.isWire() && eastItem.getSignalAtFace("west")) {
-      newOn = true;
-    }
-    if (southItem && !southItem.isWire() && southItem.getSignalAtFace("north")) {
-      newOn = true;
-    }
-    if (westItem && !westItem.isWire() && westItem.getSignalAtFace("east")) {
-      newOn = true;
-    }
-
-    if (this.networkId) {
-      if (newOn) {
-        gridManager.networkManager.setNetworkState(this.networkId, newOn)
-      }
-      newOn = gridManager.networkManager.getNetworkState(this.networkId) || newOn
-    }
+    const networkId = this.networkIds.north
+    const newOn = networkId
+      ? gridManager.networkManager.getNetworkState(networkId)
+      : false
 
     if (this.isOn === newOn) {
       return false;

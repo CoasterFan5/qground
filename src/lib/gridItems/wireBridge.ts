@@ -1,18 +1,42 @@
 import type { GridManager } from '../../routes/play/classic/gridManager';
-import { GridItem, type Face, type RenderData } from './types'
+import { GridItem, type ConnectedTile, type Face, type RenderData } from './types'
+
+const faces: Face[] = ["north", "east", "south", "west"]
 
 export class WireBridge extends GridItem {
-
-  isVerticalOn: boolean = false;
-  isHorizontalOn: boolean = false;
+  poweredFaces: Record<Face, boolean> = {
+    north: false,
+    east: false,
+    south: false,
+    west: false,
+  }
 
   onClick() {
-    // No-op for NOT gates
     return false;
   }
 
-  isWire(): boolean {
-    return true;
+  setNetwork(networkId: string | undefined, face: Face) {
+    if (face === "north" || face === "south") {
+      this.networkIds.north = networkId
+      this.networkIds.south = networkId
+    } else {
+      this.networkIds.east = networkId
+      this.networkIds.west = networkId
+    }
+  }
+
+  getConnectedTiles(face: Face): ConnectedTile[] {
+    if (face === "north" || face === "south") {
+      return [
+        { x: this.x, y: this.y + 1, face: "south" },
+        { x: this.x, y: this.y - 1, face: "north" },
+      ]
+    }
+
+    return [
+      { x: this.x + 1, y: this.y, face: "west" },
+      { x: this.x - 1, y: this.y, face: "east" },
+    ]
   }
 
   render({ x, y, gridManager }: RenderData) {
@@ -27,47 +51,43 @@ export class WireBridge extends GridItem {
     ctx.fillStyle = '#f1f1f1'
     ctx.fillRect(x + 1, y + 1, this.width - 2, this.height - 2)
 
-
-
-    ctx.fillStyle = this.isHorizontalOn ? 'yellow' : 'gray'
+    const horizontalOn = this.poweredFaces.east || this.poweredFaces.west
+    const verticalOn = this.poweredFaces.north || this.poweredFaces.south
+    ctx.fillStyle = horizontalOn ? 'yellow' : 'gray'
     ctx.fillRect(x + 1, y + 15, this.width - 2, 10)
-
-    ctx.fillStyle = this.isVerticalOn ? 'orange' : 'black'
+    ctx.fillStyle = verticalOn ? 'orange' : 'black'
     ctx.fillRect(x + 15, y, 10, this.height)
-
-
-
-
   }
 
   getSignalAtFace(face: Face) {
-    if (face == "east" || face == 'west') {
-      return this.isHorizontalOn;
-    } else if (face == "north" || face == 'south') {
-      return this.isVerticalOn;
+    switch (face) {
+      case "north":
+        return this.poweredFaces.south;
+      case "east":
+        return this.poweredFaces.west;
+      case "south":
+        return this.poweredFaces.north;
+      case "west":
+        return this.poweredFaces.east;
     }
-    return false;
   }
 
-  updateSignal(gridManager: GridManager) {
-    const left = gridManager.getItemAtPosition(this.x - 1, this.y)?.getSignalAtFace("east") ?? false;
-    const right = gridManager.getItemAtPosition(this.x + 1, this.y)?.getSignalAtFace("west") ?? false;
-    const top = gridManager.getItemAtPosition(this.x, this.y + 1)?.getSignalAtFace("south") ?? false;
-    const bottom = gridManager.getItemAtPosition(this.x, this.y - 1)?.getSignalAtFace("north") ?? false;
+  updateSignal(gridManager: GridManager): boolean {
+    let hasChanged = false
 
-    const newHorizontalOn = left || right
-    if (newHorizontalOn !== this.isHorizontalOn) {
-      this.isHorizontalOn = newHorizontalOn
-      return true;
+    for (const face of faces) {
+      const networkId = this.networkIds[face]
+      const powered = networkId
+        ? gridManager.networkManager.getNetworkState(networkId)
+        : false
+
+      if (this.poweredFaces[face] !== powered) {
+        this.poweredFaces[face] = powered
+        hasChanged = true
+      }
     }
 
-    const newVerticalOn = top || bottom
-    if (newVerticalOn !== this.isVerticalOn) {
-      this.isVerticalOn = newVerticalOn
-      return true;
-    }
-
-    return false;
+    return hasChanged
   }
 
   toJSON() {

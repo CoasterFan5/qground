@@ -13,13 +13,19 @@ export type PositionType = {
   y: number
 }
 
+export type ConnectedTile = {
+  x: number,
+  y: number,
+  face: Face,
+}
+
 export abstract class GridItem {
   id?: string
   x: number = 0
   y: number = 0
   width: number
   height: number
-  networkId: string | undefined = undefined
+  networkIds: Partial<Record<Face, string>> = {}
 
   constructor() {
     this.width = 40
@@ -44,11 +50,16 @@ export abstract class GridItem {
     return false
   }
 
+  getConnectedTiles(face: Face): ConnectedTile[] {
+    void face // here for types
+    return []
+  }
+
   /**
    * This should **ONLY** be used for wires, but is available on all items for funzies
    */
-  setNetwork(networkId: string | undefined) {
-    this.networkId = networkId;
+  setNetwork(networkId: string | undefined, face: Face) {
+    this.networkIds[face] = networkId
   }
 
   abstract render(params: RenderData): void
