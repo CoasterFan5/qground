@@ -128,7 +128,6 @@
 	}}
 />
 <div class="wrap">
-	<div class="centerMark"></div>
 	<canvas onclick={gridClickHandler} bind:this={canvasElement} onmousedown={canvasMouseDownHandler}>
 	</canvas>
 	<div class="tools"><button onclick={() => gridManager.runSimulation()}>run</button></div>
@@ -142,15 +141,6 @@
 		display: flex;
 	}
 
-	.centerMark {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		height: 2rem;
-		width: 2rem;
-		background: transparent;
-		transform: translate(-50%, -50%);
-	}
 	canvas {
 		width: 100%;
 		height: 100%;
