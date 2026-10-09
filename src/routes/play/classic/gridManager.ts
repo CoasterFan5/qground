@@ -3,6 +3,8 @@ import { ClassicBit } from "#lib/gridItems/classicBit.js";
 import { NotGate } from "#lib/gridItems/notGate.js";
 import type { GridItem, PositionType } from "#lib/gridItems/types.js";
 import { Wire } from "#lib/gridItems/wire.js";
+import { WireBridge } from "#lib/gridItems/wireBridge.ts";
+import { XOrGate } from "#lib/gridItems/xOrGate.js";
 import type { GridData } from "#lib/types/grid.js";
 import { NetworkManager } from "./networkManager";
 import { renderGridHelper } from "./renderGrid";
@@ -23,37 +25,38 @@ export class GridManager {
 
   items: GridData = {
     0: {
-      0: new ClassicBit()
+      0: new ClassicBit(),
+      2: new ClassicBit(),
     },
     1: {
       0: new Wire(),
-      1: new Wire(),
       2: new Wire(),
     },
     2: {
-      0: new NotGate(),
-      2: new NotGate(),
+      '-2': new Wire(),
+      '-1': new Wire(),
+      0: new WireBridge(),
+      1: new Wire(),
+      2: new Wire(),
     },
     3: {
+      '-2': new Wire(),
       0: new Wire(),
-      1: new AndGate(),
       2: new Wire(),
     },
     4: {
-      1: new Wire(),
+      '-2': new Wire(),
+      '-1': new AndGate(),
+      0: new Wire(),
+      1: new XOrGate(),
+      2: new Wire()
     },
     5: {
-      0: new Wire(),
       1: new Wire(),
-      2: new Wire()
+      '-1': new Wire()
     },
     6: {
-      0: new NotGate(),
-      2: new NotGate()
-    },
-    7: {
-      0: new Wire(),
-      2: new Wire()
+      '-1': new Wire()
     }
   };
 
