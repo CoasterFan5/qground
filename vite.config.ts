@@ -1,9 +1,13 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import Icons from "unplugin-icons/vite"
 
 export default defineConfig({
   plugins: [
+    Icons({
+      compiler: "svelte"
+    }),
     sveltekit({
       compilerOptions: {
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.

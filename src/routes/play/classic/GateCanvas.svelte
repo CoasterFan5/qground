@@ -7,15 +7,19 @@
 	import { saveProject } from './save.remote';
 	import toast from 'svelte-french-toast';
 	import { goto } from '$app/navigation';
+	import PlayIcon from '~icons/ph/play';
+	import SaveIcon from '~icons/ph/floppy-disk';
 
 	type GridItemInit = () => GridItem | undefined;
 
 	const {
 		placeOverride,
-		project
+		project,
+		isPlacing
 	}: {
 		placeOverride: () => GridItemInit | false;
 		project: { type: Placeable; x: number; y: number }[];
+		isPlacing: boolean;
 	} = $props();
 
 	const GRID_SIZE = 40;
@@ -133,10 +137,13 @@
 	}}
 />
 <div class="wrap">
+	{#if isPlacing}
+		<div class="placing">Placing item, click any grid tile!</div>
+	{/if}
 	<canvas onclick={gridClickHandler} bind:this={canvasElement} onmousedown={canvasMouseDownHandler}>
 	</canvas>
 	<div class="tools">
-		<button onclick={() => gridManager.runSimulation()}>Run</button>
+		<button onclick={() => gridManager.runSimulation()}><PlayIcon /></button>
 		<button
 			onclick={() => {
 				// im inlining this cause I can
@@ -151,7 +158,7 @@
 						console.error(e);
 						toast.error('Save Failed');
 					});
-			}}>Save</button
+			}}><SaveIcon /></button
 		>
 	</div>
 </div>
@@ -177,5 +184,32 @@
 		border: 1px solid var(--border);
 		background: var(--background);
 		box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.05);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+
+		button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.3rem;
+			outline: 0px;
+			border: 0px;
+			font-size: 1rem;
+			cursor: pointer;
+			&:hover {
+				color: var(--accent);
+			}
+		}
+	}
+
+	.placing {
+		position: absolute;
+		left: 50%;
+		top: 1rem;
+		font-size: 1rem;
+		font-weight: 700;
+		transform: translateX(-50%);
+		color: var(--accent);
 	}
 </style>

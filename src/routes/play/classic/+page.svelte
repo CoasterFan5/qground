@@ -28,13 +28,14 @@
 		{#each placeables as p, i (i)}
 			<button
 				class="topBarItem"
+				class:active={placingKey == p}
 				onclick={() => {
 					placingKey = p;
 				}}>{placeableDetails[p].displayName}</button
 			>
 		{/each}
 	</div>
-	<GateCanvas {placeOverride} project={data.project} />
+	<GateCanvas {placeOverride} project={data.project} isPlacing={placingKey !== undefined} />
 </div>
 
 <style>
@@ -51,5 +52,21 @@
 		border-bottom: 1px solid var(--border);
 		background: var(--secondary);
 		padding: 0.25rem;
+	}
+
+	.topBarItem {
+		border: 1px solid var(--border);
+		padding: 0.5rem;
+		border-radius: 0.25rem;
+		background: var(--background);
+		outline: 0px;
+
+		&.active {
+			border: 1px solid var(--accent);
+		}
+
+		&:hover {
+			background: var(--secondary);
+		}
 	}
 </style>
