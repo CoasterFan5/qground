@@ -16,7 +16,15 @@
       "bucket_name": "qground-projects",
       "remote": false,
       "binding": "projectStorage",
-      "preview_bucket_name": "ground-projects-preview"
     }
-  ]
+  ],
+  "previews": {
+    "r2_buckets": [
+      {
+        "bucket_name": "qground-projects",
+        "remote": false,
+        "binding": "projectStorage",
+      }
+    ]
+  }
 }
