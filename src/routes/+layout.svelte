@@ -19,6 +19,8 @@
 		margin: 0px;
 		padding: 0px;
 		height: 100vh;
+		width: 100%;
+		display: flex;
 
 		font-weight: 400;
 		font-style: normal;
