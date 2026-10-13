@@ -14,6 +14,7 @@
 		<div class="header">qGround</div>
 		<div class="sidebarButtons">
 			<a class="sidebarButton" href={resolve('/play/classic', {})}>Classic</a>
+			<a class="sidebarButton" href={resolve('/play/quantum', {})}>Quantum (alpha)</a>
 		</div>
 	</div>
 	<div class="content">

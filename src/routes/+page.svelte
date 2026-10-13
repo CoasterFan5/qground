@@ -20,6 +20,7 @@
 		display: grid;
 		min-height: 100vh;
 		min-height: 100svh;
+		width: 100%;
 		align-items: center;
 		justify-items: center;
 		overflow: hidden;

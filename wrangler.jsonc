@@ -18,13 +18,4 @@
       "binding": "projectStorage",
     }
   ],
-  "previews": {
-    "r2_buckets": [
-      {
-        "bucket_name": "qground-projects-preview",
-        "remote": false,
-        "binding": "projectStorage",
-      }
-    ]
-  }
 }

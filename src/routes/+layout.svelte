@@ -25,6 +25,7 @@
 		font-weight: 400;
 		font-style: normal;
 		--background: #fafafa;
+		--shadow: rgba(0, 0, 0, 0.05);
 		--border: #c9c9ca;
 		--secondary: #ebebec;
 		--accent: #ff7518;

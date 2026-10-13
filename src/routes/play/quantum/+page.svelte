@@ -1,40 +1,69 @@
 <script lang="ts">
-	let qubits = $state(30);
-	let gateColumns = $state(40);
-	const addQubit = () => {
-		qubits += 1;
-	};
+	import { QuantumGridManager } from '#lib/quantum/qGridManager.js';
+	import type { SimResult } from '#lib/quantum/types.js';
+	import SimResultsDisplay from './SimResultsDisplay.svelte';
 
-	const addColumn = () => {
-		gateColumns += 1;
+	const qGridManager = new QuantumGridManager(4, 4);
+	let renderKey = $state(0);
+	qGridManager.subscribeToChanges(() => {
+		console.log('render key + 1');
+		renderKey += 1;
+	});
+	qGridManager.setGate(1, 1, {
+		gate: 'Hadamard'
+	});
+	qGridManager.setGate(1, 3, {
+		gate: 'Measure'
+	});
+
+	let simResult: SimResult | undefined = $state(undefined);
+
+	const runSimulation = (e: MouseEvent) => {
+		simResult = qGridManager.runSimulation(100);
+		e.stopPropagation();
 	};
 </script>
 
 <div class="wrap">
+	<SimResultsDisplay bind:simResult />
 	<div class="gridContainer">
-		<div class="qGrid">
-			{#each Array(qubits) as _, i (i)}
-				<div class="qubitRow">
-					<div class="bitLabel">
-						qubit {i}
+		{#key renderKey}
+			<div class="qGrid">
+				{#each qGridManager.getRows() as r, i (i)}
+					<div class="qubitRow">
+						<div class="bitLabel">
+							qubit {i}
+						</div>
+						<div class="cells">
+							{#each Array(qGridManager.columns) as _, j (j)}
+								<div class="cell" class:filled={r[j] !== undefined}></div>
+							{/each}
+						</div>
 					</div>
-					<div class="cells">
-						{#each Array(gateColumns) as _, j (j)}
-							<div class="cell"></div>
-						{/each}
-					</div>
-				</div>
-			{/each}
-		</div>
+				{/each}
+			</div>
+		{/key}
 	</div>
 	<div class="tools">
-		<button onclick={addQubit}>Add qubit</button>
-		<button onclick={addColumn}>Add column</button>
+		<button
+			onclick={() => {
+				qGridManager.addQubit();
+			}}>Add qubit</button
+		>
+		<button
+			onclick={() => {
+				qGridManager.addColumn();
+			}}
+		>
+			Add column</button
+		>
+		<button onclick={runSimulation}> Run Simulation</button>
 	</div>
 </div>
 
 <style>
 	.wrap {
+		position: relative;
 		display: grid;
 		grid-template-rows: minmax(0, 1fr) auto;
 		width: 100%;
@@ -86,6 +115,10 @@
 		flex: 0 0 40px;
 		height: 40px;
 		border: 1px solid var(--border);
+
+		&.filled {
+			background: green !important;
+		}
 	}
 
 	.tools {
