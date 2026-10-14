@@ -7,7 +7,7 @@ export class Qubit {
     const r = Math.random()
 
     const aRange = this.aAmplitude ** 2;
-    if (r <= aRange) {
+    if (r >= aRange) {
       return 1
     } else {
       return 0

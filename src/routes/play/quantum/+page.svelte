@@ -1,18 +1,39 @@
 <script lang="ts">
 	import { QuantumGridManager } from '#lib/quantum/qGridManager.js';
 	import type { SimResult } from '#lib/quantum/types.js';
+	import { gateRenders } from './gateRenders';
 	import SimResultsDisplay from './SimResultsDisplay.svelte';
 
-	const qGridManager = new QuantumGridManager(4, 4);
+	const qGridManager = new QuantumGridManager(5, 5);
 	let renderKey = $state(0);
 	qGridManager.subscribeToChanges(() => {
 		console.log('render key + 1');
 		renderKey += 1;
 	});
+	qGridManager.setGate(3, 4, {
+		gate: 'Measure'
+	});
 	qGridManager.setGate(1, 1, {
 		gate: 'Hadamard'
 	});
-	qGridManager.setGate(1, 3, {
+	qGridManager.setGate(1, 4, {
+		gate: 'Measure'
+	});
+
+	qGridManager.setGate(2, 1, {
+		gate: 'Hadamard'
+	});
+	qGridManager.setGate(2, 2, {
+		gate: 'Hadamard'
+	});
+	qGridManager.setGate(2, 4, {
+		gate: 'Measure'
+	});
+
+	qGridManager.setGate(4, 1, {
+		gate: 'Pauli-X'
+	});
+	qGridManager.setGate(4, 4, {
 		gate: 'Measure'
 	});
 
@@ -36,7 +57,12 @@
 						</div>
 						<div class="cells">
 							{#each Array(qGridManager.columns) as _, j (j)}
-								<div class="cell" class:filled={r[j] !== undefined}></div>
+								<div class="cell">
+									{#if r[j]}
+										{@const Comp = gateRenders[r[j].gate]}
+										<Comp />
+									{/if}
+								</div>
 							{/each}
 						</div>
 					</div>
