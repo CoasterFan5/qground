@@ -14,6 +14,7 @@
 		<div class="header">qGround</div>
 		<div class="sidebarButtons">
 			<a class="sidebarButton" href={resolve('/play/classic', {})}>Classic</a>
+			<a class="sidebarButton" href={resolve('/play/quantum', {})}>Quantum (alpha)</a>
 		</div>
 	</div>
 	<div class="content">
@@ -27,7 +28,11 @@
 		flex-direction: row;
 		align-items: start;
 		justify-content: center;
+		width: 100%;
 		height: 100%;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	.sidebar {
@@ -67,7 +72,11 @@
 	}
 
 	.content {
-		width: 100%;
+		flex: 1 1 0;
+		width: auto;
 		height: 100%;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
 	}
 </style>

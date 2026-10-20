@@ -19,10 +19,13 @@
 		margin: 0px;
 		padding: 0px;
 		height: 100vh;
+		width: 100%;
+		display: flex;
 
 		font-weight: 400;
 		font-style: normal;
 		--background: #fafafa;
+		--shadow: rgba(0, 0, 0, 0.05);
 		--border: #c9c9ca;
 		--secondary: #ebebec;
 		--accent: #ff7518;
