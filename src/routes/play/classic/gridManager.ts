@@ -1,5 +1,6 @@
 import type { GridItem, Placeable, PositionType } from "#lib/gridItems/types.js";
 import type { GridData } from "#lib/types/grid.js";
+import toast from "svelte-french-toast";
 import { NetworkManager } from "./networkManager";
 import { placeableDetails } from "./placeables";
 import { renderGridHelper } from "./renderGrid";
@@ -146,6 +147,7 @@ export class GridManager {
     while (pendingResim) {
       this.networkManager.updateNetworkStates(this)
       if (iterationCount >= maxIterations) {
+        toast.error("Max Iteration count exceeded")
         console.warn("iteration count exceeded")
         break
       }

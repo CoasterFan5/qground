@@ -7,6 +7,13 @@ export const load: PageServerLoad = async ({ url }) => {
 
 
   const projectId = url.searchParams.get("project")
+  const isBlank = url.searchParams.has("blank")
+
+  if (isBlank) {
+    return {
+      project: []
+    }
+  }
 
   if (!projectId) {
     return {
