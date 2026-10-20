@@ -141,10 +141,6 @@
 		flex: 0 0 40px;
 		height: 40px;
 		border: 1px solid var(--border);
-
-		&.filled {
-			background: green !important;
-		}
 	}
 
 	.tools {
