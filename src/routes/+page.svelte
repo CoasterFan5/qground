@@ -8,7 +8,7 @@
 		<p>Play with bits and qubits!</p>
 		<div class="buttons">
 			<a class="button buttonPrimary" href={resolve('/play/classic', {})}>Classic</a>
-			<a class="button buttonSecondary" href={resolve('/play/classic', {})}>Quantum</a>
+			<a class="button buttonSecondary" href={resolve('/play/quantum', {})}>Quantum</a>
 		</div>
 	</div>
 </main>
