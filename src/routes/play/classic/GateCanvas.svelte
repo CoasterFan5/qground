@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation';
 	import PlayIcon from '~icons/ph/play';
 	import SaveIcon from '~icons/ph/floppy-disk';
+	import ClockIcon from '~icons/ph/clock';
 
 	type GridItemInit = () => GridItem | undefined;
 
@@ -121,10 +122,16 @@
 		if (placing) {
 			const gridPos = gridManager.getCusorGridPosition();
 			gridManager.setItemAtPosition(gridPos.x, gridPos.y, placing());
+			gridManager.runSimulation();
 			return;
 		}
 		gridManager.onClick(e);
 	};
+
+	let slowMode = $state(false);
+	$effect(() => {
+		gridManager.slowMode = slowMode;
+	});
 </script>
 
 <svelte:window
@@ -159,6 +166,13 @@
 						toast.error('Save Failed');
 					});
 			}}><SaveIcon /></button
+		>
+		<button
+			onclick={() => {
+				// im inlining this cause I can
+				slowMode = !slowMode;
+			}}
+			class:active={slowMode}><ClockIcon /></button
 		>
 	</div>
 </div>
@@ -199,6 +213,11 @@
 			cursor: pointer;
 			&:hover {
 				color: var(--accent);
+			}
+
+			&.active {
+				background: var(--accent);
+				color: var(--background);
 			}
 		}
 	}

@@ -6,11 +6,13 @@ import { placeableDetails } from "./placeables";
 import { renderGridHelper } from "./renderGrid";
 
 
-
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 
 export class GridManager {
   gridSize: number = 0;
+  activeSimId: number = 0;
+  slowMode: boolean = false;
   canvas: HTMLCanvasElement | undefined = undefined;
   width: number = 0;
   height: number = 0;
@@ -138,18 +140,26 @@ export class GridManager {
     e.preventDefault()
   }
 
-  runSimulation() {
-
+  async runSimulation() {
+    this.activeSimId += 1;
+    const simId = this.activeSimId
     let pendingResim = true;
     let iterationCount = 0;
     const maxIterations = 5_000;
     this.networkManager.runFloodFill(this)
     while (pendingResim) {
+      if (simId != this.activeSimId) {
+        break
+      }
       this.networkManager.updateNetworkStates(this)
       if (iterationCount >= maxIterations) {
         toast.error("Max Iteration count exceeded")
         console.warn("iteration count exceeded")
-        break
+        if (this.slowMode) {
+          console.warn("Iteration max ignored by slow mode!")
+        } else {
+          break;
+        }
       }
       iterationCount += 1;
       pendingResim = false;
@@ -160,6 +170,10 @@ export class GridManager {
           }
 
         }
+      }
+      if (this.slowMode) {
+        this.render()
+        await sleep(100)
       }
     }
     console.info(`Finished resim in ${iterationCount}/${maxIterations} iterations`)
