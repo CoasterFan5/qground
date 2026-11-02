@@ -45,9 +45,9 @@ export class QuantumGridManager {
   }
 
   callSubscribers() {
-    const s = this.subscribers.values()
-    for (const a of s) {
-      a()
+    const subs = this.subscribers.values()
+    for (const callback of subs) {
+      callback()
     }
   }
 
