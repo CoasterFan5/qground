@@ -1,4 +1,4 @@
-import type { GridManager } from '../../routes/play/classic/gridManager';
+import type { GridManager } from '../../routes/(app)/play/classic/gridManager';
 import { GridItem, type Face, type RenderData } from './types'
 
 export class NotGate extends GridItem {

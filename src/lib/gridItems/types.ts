@@ -1,4 +1,4 @@
-import type { GridManager } from "../../routes/play/classic/gridManager"
+import type { GridManager } from "../../routes/(app)/play/classic/gridManager"
 
 export type RenderData = {
   gridManager: GridManager,
